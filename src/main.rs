@@ -16,10 +16,9 @@ fn run(content: String) -> io::Result<()> {
   execute!(stdout, Clear(ClearType::All), SetCursorStyle::BlinkingBar, MoveTo(0, 0))?;
   editor.repaint(|row_index, row| {
     for (col_index, ch) in row.iter().enumerate() {
-      queue!(stdout, MoveTo(col_index as u16, row_index as u16), Print(ch))?;
+      let _ = queue!(stdout, MoveTo(col_index as u16, row_index as u16), Print(ch));
     }
-    Ok(())
-  })?;
+  });
   queue!(stdout, MoveTo(1, 1))?;
   stdout.flush()?;
   loop {
@@ -39,11 +38,9 @@ fn run(content: String) -> io::Result<()> {
 }
 
 fn main() -> io::Result<()> {
-  // enter raw mode, directly process each key press
   terminal::enable_raw_mode()?;
   let content = fs::read_to_string("./examples/e1.dtb").expect("Failed to load file");
   let _ = run(content);
-  // return to canonical mode, process input after pressing Enter
   terminal::disable_raw_mode()?;
   Ok(())
 }
