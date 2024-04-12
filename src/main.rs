@@ -1,9 +1,8 @@
 mod keys;
 
 use crate::keys::{read_key, Key};
-use crossterm::{event, terminal, ExecutableCommand};
-use std::fmt::Display;
-use std::{fmt, io};
+use crossterm::{terminal, ExecutableCommand};
+use std::io;
 
 fn run() -> io::Result<()> {
   let mut stdout = io::stdout();
@@ -11,6 +10,10 @@ fn run() -> io::Result<()> {
   loop {
     match read_key() {
       Key::CtrlQ => break,
+      Key::Char(ch) => {
+        // TODO remove
+        println!("{}", ch)
+      }
       other => {
         // TODO remove
         println!("{:?}", other)
