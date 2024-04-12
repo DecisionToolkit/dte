@@ -9,6 +9,7 @@ const M_SHIFT: KeyModifiers = KeyModifiers::SHIFT;
 
 #[derive(Debug)]
 pub enum Key {
+  Enter,
   Backspace,
   Delete,
   Down,
@@ -23,6 +24,7 @@ pub enum Key {
   ShiftTab,
   CtrlQ,
   Char(char),
+  Resize(usize, usize),
 }
 
 pub fn read_key() -> Key {
@@ -30,6 +32,7 @@ pub fn read_key() -> Key {
     if let Ok(event) = event::read() {
       match event {
         Event::Key(KeyEvent { code, modifiers, kind, state }) => match (code, modifiers, kind, state) {
+          (KeyCode::Enter, M_NONE, PRESS, S_NONE) => return Key::Enter,
           (KeyCode::Left, M_NONE, PRESS, S_NONE) => return Key::Left,
           (KeyCode::Right, M_NONE, PRESS, S_NONE) => return Key::Right,
           (KeyCode::Up, M_NONE, PRESS, S_NONE) => return Key::Up,
@@ -44,15 +47,10 @@ pub fn read_key() -> Key {
           (KeyCode::BackTab, M_SHIFT, PRESS, S_NONE) => return Key::ShiftTab,
           (KeyCode::Char('q'), M_CTRL, PRESS, S_NONE) => return Key::CtrlQ,
           (KeyCode::Char(ch), _, PRESS, S_NONE) => return Key::Char(ch),
-          _ => {
-            // TODO remove
-            println!("{:?}", event);
-          }
+          _ => {}
         },
-        _ => {
-          // TODO remove
-          println!("{:?}", event);
-        }
+        Event::Resize(width, height) => return Key::Resize(width as usize, height as usize),
+        _ => {}
       }
     }
   }
