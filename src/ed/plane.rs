@@ -1,69 +1,49 @@
 //! # Text editing plane
 
+use crate::ed::cursor::{Cursor, CursorType};
+use std::cmp::min;
 use std::fmt;
 use std::fmt::Display;
 
 const CH_WS: char = ' ';
 
-/// Checks if the specified character is a box-drawing character.
+/// Checks whether the specified character is a box-drawing character.
 macro_rules! is_box_drawing_character {
   ($ch:expr) => {
-    match $ch {
-      '┌' | '┐' | '└' | '┘' | '─' | '│' | '├' | '┤' | '┴' | '┬' | '┼' | '╪' | '╫' | '╬' | '╞' | '╡' | '╥' | '╨' | '═' | '║' | '╟' | '╢' => true,
-      _ => false,
-    }
+    matches!(
+      $ch,
+      '┌' | '┐' | '└' | '┘' | '─' | '│' | '├' | '┤' | '┴' | '┬' | '┼' | '╪' | '╫' | '╬' | '╞' | '╡' | '╥' | '╨' | '═' | '║' | '╟' | '╢'
+    )
   };
 }
 
-/// Checks if the specified character is a vertical line seen from the left side.
+/// Checks whether the specified character is a vertical line seen from the left side.
 macro_rules! is_vert_line_left {
   ($ch:expr) => {
-    match $ch {
-      '│' | '├' | '║' | '╟' => true,
-      _ => false,
-    }
+    matches!($ch, '│' | '├' | '║' | '╟')
   };
 }
 
-/// Checks if the specified character is a vertical line seen from the right side.
+/// Checks whether the specified character is a vertical line seen from the right side.
 macro_rules! is_vert_line_right {
   ($ch:expr) => {
-    match $ch {
-      '│' | '┤' | '║' | '╢' => true,
-      _ => false,
-    }
+    matches!($ch, '│' | '┤' | '║' | '╢')
   };
 }
 
-/// Checks if the specified character is a crossing with vertical line.
+/// Checks whether the specified character is a crossing with vertical line.
 macro_rules! is_vert_line_crossing {
   ($ch:expr) => {
-    match $ch {
-      '│' | '┼' | '┬' | '┴' | '╪' | '┐' | '┘' | '├' | '║' | '╟' | '╬' | '╥' | '╨' | '╫' | '╢' | '┤' | '╡' => true,
-      _ => false,
-    }
+    matches!($ch, '│' | '┼' | '┬' | '┴' | '╪' | '┐' | '┘' | '├' | '║' | '╟' | '╬' | '╥' | '╨' | '╫' | '╢' | '┤' | '╡')
   };
 }
 
-/// Checks if the specified character is a horizontal line seen from top side.
+/// Checks whether the specified character is a horizontal line seen from top side.
 macro_rules! is_horz_line_top {
   ($ch:expr) => {
-    match $ch {
-      '─' | '┬' | '═' | '╥' => true,
-      _ => false,
-    }
+    matches!($ch, '─' | '┬' | '═' | '╥')
   };
 }
-
-// /// Checks if the specified character is a crossing with horizontal line.
-// macro_rules! is_horz_line_crossing {
-//   ($ch:expr) => {
-//     match $ch {
-//       '─' | '┼' | '┬' | '┴' | '╪' | '┐' | '┘' | '├' | '═' | '╟' | '╬' | '╥' | '╨' | '╫' | '╢' | '┤' | '╡' => true,
-//       _ => false,
-//     }
-//   };
-// }
 
 enum Op {
   Insert,
@@ -74,10 +54,8 @@ enum Op {
 pub struct Plane {
   /// Rows in plane.
   pub chars: Vec<Vec<char>>,
-  /// Current vertical cursor position (row index).
-  row: usize,
-  /// Current horizontal cursor position (column index).
-  col: usize,
+  /// Cursor properties.
+  cursor: Cursor,
   /// Information item height (0 when not present).
   iih: usize,
 }
@@ -102,7 +80,7 @@ impl Display for Plane {
 }
 
 impl Plane {
-  /// Creates a plane from text.
+  /// Creates a new plane with specified content.
   pub fn new(content: String) -> Self {
     let mut rows = vec![];
     for content_line in content.lines() {
@@ -116,32 +94,46 @@ impl Plane {
       }
     }
     let iih = information_item_height(&rows);
-    Self { chars: rows, row: 1, col: 1, iih }
+    Self {
+      chars: rows,
+      cursor: Cursor::new(CursorType::Bar, 1, 1),
+      iih,
+    }
   }
 
-  /// Returns the vertical position of the cursor in plane coordinates.
-  pub fn cursor_row(&self) -> usize {
-    self.row
+  /// Returns the position of the cursor in plane's coordinates.
+  pub fn cursor(&self) -> (usize, usize) {
+    self.cursor.pos()
   }
 
-  /// Returns the horizontal position of the cursor in plane coordinates.
-  pub fn cursor_col(&self) -> usize {
-    self.col
+  /// Returns the character pointed by cursor.
+  pub fn char_under_cursor(&self) -> Option<char> {
+    let (col, row) = self.cursor.pos();
+    if let Some(row) = self.chars.get(row) {
+      if let Some(ch) = row.get(col) {
+        return Some(*ch);
+      }
+    }
+    None
+  }
+
+  pub fn content(&self) -> &Vec<Vec<char>> {
+    &self.chars
   }
 
   /// Returns `true` if the current cursor position is valid.
-  pub fn is_valid_cursor_pos(&self) -> bool {
-    (1..self.chars.len() - 1).contains(&self.row) && (1..self.chars[self.row].len() - 1).contains(&self.col)
+  fn is_valid_cursor_pos(&self) -> bool {
+    (1..self.chars.len() - 1).contains(&self.cursor.row()) && (1..self.chars[self.cursor.col()].len() - 1).contains(&self.cursor.col())
   }
 
   /// Moves cursor up.
   pub fn cursor_move_up(&mut self) -> bool {
     if self.is_allowed_position(-1, 0) {
-      self.cursor_move(-1, 0);
+      self.cursor.dec_row(1);
       return true;
     }
-    if self.is_horz_line(-1, 0) && self.is_allowed_position(-2, 0) {
-      self.cursor_move(-2, 0);
+    if self.is_allowed_position(-2, 0) {
+      self.cursor.dec_row(2);
       return true;
     }
     false
@@ -150,11 +142,11 @@ impl Plane {
   /// Moves cursor down.
   pub fn cursor_move_down(&mut self) -> bool {
     if self.is_allowed_position(1, 0) {
-      self.row += 1;
+      self.cursor.inc_row(1);
       return true;
     }
-    if self.is_horz_line(1, 0) && self.is_allowed_position(2, 0) {
-      self.row += 2;
+    if self.is_allowed_position(2, 0) {
+      self.cursor.inc_row(2);
       return true;
     }
     false
@@ -163,11 +155,11 @@ impl Plane {
   /// Moves cursor left.
   pub fn cursor_move_left(&mut self) -> bool {
     if self.is_allowed_position(0, -1) {
-      self.col -= 1;
+      self.cursor.dec_col(1);
       return true;
     }
-    if self.is_vert_line(0, -1) && self.is_allowed_position(0, -2) {
-      self.col -= 2;
+    if self.is_allowed_position(0, -2) {
+      self.cursor.dec_col(2);
       return true;
     }
     false
@@ -176,91 +168,86 @@ impl Plane {
   /// Moves cursor right.
   pub fn cursor_move_right(&mut self) -> bool {
     if self.is_allowed_position(0, 1) {
-      self.col += 1;
+      self.cursor.inc_col(1);
       return true;
     }
-    if self.is_vert_line(0, 1) && self.is_allowed_position(0, 2) {
-      self.col += 2;
+    if self.is_allowed_position(0, 2) {
+      self.cursor.inc_col(2);
       return true;
     }
     false
   }
 
-  /// Places cursor at the first character in the cell (same row).
+  /// Places cursor at the first character in the cell.
   pub fn cursor_move_cell_start(&mut self) -> bool {
-    if self.is_valid_cursor_pos() {
-      if let Some(offset) = self.get_vert_line_offset_left() {
-        self.cursor_move(0, offset + 1);
-        return true;
-      }
+    if let Some(offset) = self.get_vert_line_offset_left() {
+      self.cursor.adj_col(offset);
+      return true;
     }
     false
   }
 
   /// Places cursor at the last character in the cell (same row).
   pub fn cursor_move_cell_end(&mut self) -> bool {
-    if self.is_valid_cursor_pos() {
-      if let Some(offset) = self.get_vert_line_offset_right() {
-        self.cursor_move(0, offset - 1);
-        return true;
+    if let Some(offset) = self.get_vert_line_offset_right() {
+      self.cursor.adj_col(offset);
+      return true;
+    }
+    false
+  }
+
+  /// Places cursor at the first character of the first cell in row.
+  pub fn cursor_move_row_start(&mut self) -> bool {
+    if let Some(row) = self.chars.get(self.cursor.row()) {
+      for (offset, ch) in row.iter().enumerate() {
+        if is_vert_line_right!(ch) {
+          self.cursor.set_col(min(offset + 1, row.len() - 1));
+          return true;
+        }
       }
     }
     false
   }
 
-  /// Places cursor at the first character in the decision table (same row).
-  pub fn cursor_move_table_start(&mut self) -> bool {
-    if (1..self.chars.len() - 1).contains(&self.row) {
-      return if is_box_drawing_character!(self.chars[self.row][1]) {
-        self.cursor_move_cell_start()
-      } else {
-        self.col = 1;
-        true
-      };
+  /// Places cursor at the last character of the last cell in row.
+  pub fn cursor_move_row_end(&mut self) -> bool {
+    if let Some(row) = self.chars.get(self.cursor.row()) {
+      for (offset, ch) in row.iter().rev().enumerate() {
+        if is_vert_line_left!(ch) {
+          self.cursor.set_col(if self.cursor.is_bar() {
+            row.len().saturating_sub(offset + 1)
+          } else {
+            row.len().saturating_sub(offset + 2)
+          });
+          return true;
+        }
+      }
     }
     false
   }
 
-  /// Places cursor at the last character in the cell (same row).
-  pub fn cursor_move_table_end(&mut self) -> bool {
-    if (1..self.chars.len() - 1).contains(&self.row) {
-      let index = self.chars[self.row].len() - 2;
-      return if is_box_drawing_character!(self.chars[self.row][index]) {
+  /// Places ths cursor at the first character of the next cell in a row.
+  pub fn cursor_move_cell_next(&mut self) -> bool {
+    if let Some(offset) = self.get_vert_line_offset_right() {
+      return if self.is_allowed_position(0, offset + 1) {
+        self.cursor.adj_col(offset + 1);
+        true
+      } else {
         self.cursor_move_cell_end()
-      } else {
-        self.col = self.chars[self.row].len() - 2;
-        true
       };
     }
     false
   }
 
-  /// Places cursor at the first character in the next cell to the right.
-  pub fn cursor_move_cell_right(&mut self) -> bool {
-    if self.is_valid_cursor_pos() {
-      if let Some(offset) = self.get_vert_line_offset_right() {
-        return if self.is_allowed_position(0, offset + 1) {
-          self.cursor_move(0, offset + 1);
-          true
-        } else {
-          self.cursor_move_cell_end()
-        };
-      }
-    }
-    false
-  }
-
-  /// Places cursor at the last character in the next cell to the left.
-  pub fn cursor_move_cell_left(&mut self) -> bool {
-    if self.is_valid_cursor_pos() {
-      if let Some(offset) = self.get_vert_line_offset_left() {
-        return if self.is_allowed_position(0, offset - 1) {
-          self.cursor_move(0, offset - 1);
-          true
-        } else {
-          self.cursor_move_cell_start()
-        };
-      }
+  /// Places the cursor at the last character of the previous cell in a row.
+  pub fn cursor_move_cell_prev(&mut self) -> bool {
+    if let Some(offset) = self.get_vert_line_offset_left() {
+      return if self.is_allowed_position(0, offset - 1) {
+        self.cursor_move(0, offset - 1);
+        true
+      } else {
+        self.cursor_move_cell_start()
+      };
     }
     false
   }
@@ -270,10 +257,10 @@ impl Plane {
     if self.is_valid_cursor_pos() {
       let pos = self.last_col_before_vert_line_right();
       let (found, offset) = self.is_whitespace_before_vert_line();
-      let columns = &mut self.chars[self.row];
-      columns.insert(self.col, ch);
+      let columns = &mut self.chars[self.cursor.row()];
+      columns.insert(self.cursor.col(), ch);
       if found {
-        columns.remove(self.col + offset + 1);
+        columns.remove(self.cursor.col() + offset + 1);
       } else {
         self.insert_column_before_vert_line(pos);
       }
@@ -286,8 +273,8 @@ impl Plane {
   pub fn delete_char_before(&mut self) {
     if self.is_allowed_position(0, -1) {
       let pos = self.last_col_before_vert_line_right();
-      self.chars[self.row].insert(pos + 1, CH_WS);
-      self.chars[self.row].remove(self.col - 1);
+      self.chars[self.cursor.row()].insert(pos + 1, CH_WS);
+      self.chars[self.cursor.row()].remove(self.cursor.col() - 1);
       if self.is_whitespace_column_before_vert_line(pos, Op::Delete) {
         self.delete_column_before_vert_line(pos);
       }
@@ -299,12 +286,12 @@ impl Plane {
   /// Deletes a character placed *under* the cursor.
   pub fn delete_char(&mut self) {
     let pos = self.last_col_before_vert_line_right();
-    self.chars[self.row].insert(pos + 1, CH_WS);
-    self.chars[self.row].remove(self.col);
+    self.chars[self.cursor.row()].insert(pos + 1, CH_WS);
+    self.chars[self.cursor.row()].remove(self.cursor.col());
     if self.is_whitespace_column_before_vert_line(pos, Op::Delete) {
       self.delete_column_before_vert_line(pos);
     }
-    if is_box_drawing_character!(self.chars[self.row][self.col]) {
+    if is_box_drawing_character!(self.chars[self.cursor.row()][self.cursor.col()]) {
       self.cursor_move(0, -1);
     }
     self.update_joins();
@@ -323,21 +310,20 @@ impl Plane {
     // move all lines one line down
 
     // move characters from the right side of the split to the beginning of the next line
-    for (offset, col_index) in (self.col..=col_last).enumerate() {
-      self.chars[self.row + 1][col_first + offset] = self.chars[self.row][col_index];
-      self.chars[self.row][col_index] = CH_WS;
+    for (offset, col_index) in (self.cursor.col()..=col_last).enumerate() {
+      self.chars[self.cursor.row() + 1][col_first + offset] = self.chars[self.cursor.row()][col_index];
+      self.chars[self.cursor.row()][col_index] = CH_WS;
     }
-    self.row += 1;
-    self.col = col_first;
+    self.cursor.inc_row(1);
+    self.cursor.set_col(col_first);
   }
 
   /// Moves the cursor to new position.
-  fn cursor_move(&mut self, row_offset: i32, col_offset: i32) {
+  fn cursor_move(&mut self, row_offset: isize, col_offset: isize) {
     if self.is_allowed_position(row_offset, col_offset) {
-      let (row, col) = self.adjusted_position(row_offset, col_offset);
+      let (row, col) = self.cursor.adjusted(row_offset, col_offset);
       if (1..self.chars.len() - 1).contains(&row) && (1..self.chars[row].len() - 1).contains(&col) {
-        self.row = row;
-        self.col = col;
+        self.cursor.set(col, row);
       }
     }
   }
@@ -372,41 +358,41 @@ impl Plane {
   /// Returns the index of the first column after the vertical line
   /// to the left from the character pointed by current cursor position.
   fn first_col_after_vert_line_left(&self) -> usize {
-    let offset = self.chars[self.row].len();
-    for (col_index, ch) in self.chars[self.row].iter().rev().enumerate().skip(offset - self.col + 1) {
+    let offset = self.chars[self.cursor.row()].len();
+    for (col_index, ch) in self.chars[self.cursor.row()].iter().rev().enumerate().skip(offset - self.cursor.col() + 1) {
       if is_vert_line_right!(ch) {
         return offset - col_index;
       }
     }
-    self.col
+    self.cursor.col()
   }
 
   /// Returns the index of the last column before the vertical line
   /// to the right from the character pointed by current cursor position.
   fn last_col_before_vert_line_right(&self) -> usize {
-    for (col_index, ch) in self.chars[self.row].iter().enumerate().skip(self.col) {
+    for (col_index, ch) in self.chars[self.cursor.row()].iter().enumerate().skip(self.cursor.col()) {
       if is_vert_line_left!(ch) {
         return col_index - 1;
       }
     }
-    self.col
+    self.cursor.col()
   }
 
   /// Returns the index of the last row before the horizontal line
   /// below the character pointed by current cursor position.
   fn last_row_before_horz_line_below(&self) -> usize {
-    for (row_index, row) in self.chars.iter().enumerate().skip(self.row) {
-      if (1..row.len() - 1).contains(&self.col) && is_horz_line_top!(row[self.col]) {
+    for (row_index, row) in self.chars.iter().enumerate().skip(self.cursor.row()) {
+      if (1..row.len() - 1).contains(&self.cursor.col()) && is_horz_line_top!(row[self.cursor.col()]) {
         return row_index - 1;
       }
     }
-    self.row
+    self.cursor.row()
   }
 
   fn is_whitespace_before_vert_line(&self) -> (bool, usize) {
     let mut count = 0;
     let mut offset = 0;
-    for ch in &self.chars[self.row][self.col + 1..] {
+    for ch in &self.chars[self.cursor.row()][self.cursor.col() + 1..] {
       if is_vert_line_left!(ch) {
         break;
       } else if *ch == CH_WS {
@@ -422,7 +408,7 @@ impl Plane {
   fn insert_column_before_vert_line(&mut self, col_pos: usize) {
     let (skip, take) = self.rows_skip_and_take(Op::Insert);
     for (row_index, row) in self.chars.iter_mut().enumerate().skip(skip).take(take) {
-      if row_index != self.row && col_pos < row.len() - 1 {
+      if row_index != self.cursor.row() && col_pos < row.len() - 1 {
         let mut found_char = CH_WS;
         let mut found_index = 0;
         for (col_index, ch) in row[col_pos..].iter().enumerate() {
@@ -496,58 +482,45 @@ impl Plane {
   }
 
   /// Returns `true` when the character at the specified position is a horizontal line.
-  fn is_horz_line(&self, row_offset: i32, col_offset: i32) -> bool {
-    let (r, c) = self.adjusted_position(row_offset, col_offset);
+  fn is_horz_line(&self, row_offset: isize, col_offset: isize) -> bool {
+    let (r, c) = self.cursor.adjusted(row_offset, col_offset);
     if r < self.chars.len() && c < self.chars[r].len() {
-      matches!(self.chars[r][c], '─' | '═')
+      is_horz_line_top!(self.chars[r][c])
     } else {
       false
     }
   }
 
   /// Returns `true` when the character at the specified position is a vertical line.
-  fn is_vert_line(&self, row_offset: i32, col_offset: i32) -> bool {
-    let (r, c) = self.adjusted_position(row_offset, col_offset);
-    if r < self.chars.len() && c < self.chars[r].len() {
-      matches!(self.chars[r][c], '│' | '║')
+  fn is_vert_line(&self, row_offset: isize, col_offset: isize) -> bool {
+    let (col, row) = self.cursor.adjusted_1(col_offset, row_offset);
+    if row < self.chars.len() && col < self.chars[row].len() {
+      matches!(self.chars[row][col], '│' | '║')
     } else {
       false
     }
   }
 
   /// Returns `true` when the cursor position is allowed according to horizontal and vertical offset.
-  fn is_allowed_position(&self, row_offset: i32, col_offset: i32) -> bool {
-    let (r, c) = self.adjusted_position(row_offset, col_offset);
-    if r > 0 && r < self.chars.len() - 1 && c > 0 && c < self.chars[r].len() - 1 {
-      !is_box_drawing_character!(self.chars[r][c])
-    } else {
-      false
+  fn is_allowed_position(&self, row_offset: isize, col_offset: isize) -> bool {
+    let (col, row) = self.cursor.adjusted_1(col_offset, row_offset);
+    if row > 0 && row < self.chars.len() - 1 && col > 0 && col < self.chars[row].len() {
+      if self.cursor.is_bar() {
+        return !is_box_drawing_character!(self.chars[row][col]) || is_vert_line_left!(self.chars[row][col]);
+      } else if col < self.chars[row].len() - 1 {
+        return !is_box_drawing_character!(self.chars[row][col]);
+      }
     }
-  }
-
-  /// Calculates a new position according the specified row and column offset.
-  fn adjusted_position(&self, row_offset: i32, col_offset: i32) -> (usize, usize) {
-    (
-      if row_offset >= 0 {
-        self.row.saturating_add(row_offset as usize)
-      } else {
-        self.row.saturating_sub(row_offset.unsigned_abs() as usize)
-      },
-      if col_offset >= 0 {
-        self.col.saturating_add(col_offset as usize)
-      } else {
-        self.col.saturating_sub(col_offset.unsigned_abs() as usize)
-      },
-    )
+    false
   }
 
   /// Returns the offset of the vertical line to the right from current cursor position.
-  fn get_vert_line_offset_right(&self) -> Option<i32> {
-    if self.is_valid_cursor_pos() {
-      for (index, ch) in self.chars[self.row][self.col..].iter().enumerate() {
-        if is_vert_line_left!(ch) {
-          if let Ok(offset) = index.try_into() {
-            return Some(offset);
+  fn get_vert_line_offset_right(&self) -> Option<isize> {
+    if let Some(row) = self.chars.get(self.cursor.row()) {
+      if self.cursor.col() < row.len() - 1 {
+        for (offset, ch) in row[self.cursor.col()..].iter().enumerate() {
+          if is_vert_line_left!(ch) {
+            return Some(if self.cursor.is_bar() { offset as isize } else { (offset as isize) - 1 });
           }
         }
       }
@@ -556,11 +529,26 @@ impl Plane {
   }
 
   /// Returns the offset of the vertical line to the left from current cursor position.
-  fn get_vert_line_offset_left(&self) -> Option<i32> {
-    if self.is_valid_cursor_pos() {
-      for (offset, ch) in self.chars[self.row][0..=self.col].iter().rev().enumerate() {
-        if is_vert_line_right!(ch) {
-          return Some(-(offset as i32));
+  fn get_vert_line_offset_left(&self) -> Option<isize> {
+    if let Some(row) = self.chars.get(self.cursor.row()) {
+      if self.cursor.col() < row.len() {
+        for (offset, ch) in row[0..self.cursor.col()].iter().rev().enumerate() {
+          if is_vert_line_right!(ch) {
+            return Some(-(offset as isize));
+          }
+        }
+      }
+    }
+    None
+  }
+
+  fn box_drawing_character_position_right(&self) -> Option<usize> {
+    if let Some(row) = self.chars.get(self.cursor.row()) {
+      if self.cursor.col() < row.len() {
+        for (pos, ch) in row[self.cursor.col()..].iter().enumerate() {
+          if is_box_drawing_character!(ch) {
+            return Some(if self.cursor.is_bar() { pos } else { pos.saturating_sub(1) });
+          }
         }
       }
     }
@@ -569,7 +557,7 @@ impl Plane {
 
   /// Returns the number of rows to skip and to take while iterating over rows.
   fn rows_skip_and_take(&self, op: Op) -> (usize, usize) {
-    if self.row < self.iih {
+    if self.cursor.row() < self.iih {
       // operation takes place in information item cell
       match op {
         Op::Insert => {
@@ -596,7 +584,7 @@ impl Plane {
         Op::Delete => {
           //
           let l_first = self.chars[0].len();
-          let l_current = self.chars[self.row].len();
+          let l_current = self.chars[self.cursor.row()].len();
           if l_current > l_first {
             (self.iih, self.chars.len() - self.iih)
           } else {
@@ -605,6 +593,10 @@ impl Plane {
         }
       }
     }
+  }
+
+  pub fn toggle_cursor(&mut self) -> CursorType {
+    self.cursor.toggle()
   }
 }
 
