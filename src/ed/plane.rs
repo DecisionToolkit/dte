@@ -180,18 +180,30 @@ impl Plane {
 
   /// Places cursor at the first character in the cell.
   pub fn cursor_move_cell_start(&mut self) -> bool {
-    if let Some(offset) = self.get_vert_line_offset_left() {
-      self.cursor.adj_col(offset);
-      return true;
+    if let Some(row) = self.chars.get(self.cursor.row()) {
+      if self.cursor.col() < row.len() {
+        for (offset, ch) in row[..self.cursor.col()].iter().rev().enumerate() {
+          if is_box_drawing_character!(ch) {
+            self.cursor.dec_col(offset);
+            return true;
+          }
+        }
+      }
     }
     false
   }
 
   /// Places cursor at the last character in the cell (same row).
   pub fn cursor_move_cell_end(&mut self) -> bool {
-    if let Some(offset) = self.get_vert_line_offset_right() {
-      self.cursor.adj_col(offset);
-      return true;
+    if let Some(row) = self.chars.get(self.cursor.row()) {
+      if self.cursor.col() < row.len() {
+        for (offset, ch) in row[self.cursor.col()..].iter().enumerate() {
+          if is_box_drawing_character!(ch) {
+            self.cursor.inc_col(if self.cursor.is_bar() { offset } else { offset.saturating_sub(1) });
+            return true;
+          }
+        }
+      }
     }
     false
   }
@@ -535,19 +547,6 @@ impl Plane {
         for (offset, ch) in row[0..self.cursor.col()].iter().rev().enumerate() {
           if is_vert_line_right!(ch) {
             return Some(-(offset as isize));
-          }
-        }
-      }
-    }
-    None
-  }
-
-  fn box_drawing_character_position_right(&self) -> Option<usize> {
-    if let Some(row) = self.chars.get(self.cursor.row()) {
-      if self.cursor.col() < row.len() {
-        for (pos, ch) in row[self.cursor.col()..].iter().enumerate() {
-          if is_box_drawing_character!(ch) {
-            return Some(if self.cursor.is_bar() { pos } else { pos.saturating_sub(1) });
           }
         }
       }
