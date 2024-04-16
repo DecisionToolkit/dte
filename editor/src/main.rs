@@ -5,7 +5,7 @@ use crossterm::cursor::{MoveTo, SetCursorStyle};
 use crossterm::style::Print;
 use crossterm::terminal::{size, Clear, ClearType};
 use crossterm::{execute, queue, terminal};
-use dtee::{CursorType, Editor};
+use dtee::{CursorShape, Editor};
 use std::fs;
 use std::io;
 use std::io::{Stdout, Write};
@@ -81,9 +81,9 @@ fn run(content: String) -> io::Result<()> {
       Key::CtrlQ => break,
       Key::Insert => {
         match editor.toggle_cursor() {
-          CursorType::Bar => execute!(stdout, SetCursorStyle::BlinkingBar)?,
-          CursorType::Block => execute!(stdout, SetCursorStyle::BlinkingBlock)?,
-          CursorType::UnderScore => execute!(stdout, SetCursorStyle::BlinkingUnderScore)?,
+          CursorShape::Bar => execute!(stdout, SetCursorStyle::BlinkingBar)?,
+          CursorShape::Block => execute!(stdout, SetCursorStyle::BlinkingBlock)?,
+          CursorShape::UnderScore => execute!(stdout, SetCursorStyle::BlinkingUnderScore)?,
         }
         // refresh character under cursor
         if let Some(ch) = editor.char_under_cursor() {

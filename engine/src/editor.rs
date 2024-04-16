@@ -1,4 +1,4 @@
-use crate::cursor::CursorType;
+use crate::cursor::CursorShape;
 use crate::plane::Plane;
 
 struct Viewport {
@@ -114,7 +114,7 @@ impl Editor {
     None
   }
 
-  pub fn toggle_cursor(&mut self) -> CursorType {
+  pub fn toggle_cursor(&mut self) -> CursorShape {
     self.plane.toggle_cursor()
   }
 

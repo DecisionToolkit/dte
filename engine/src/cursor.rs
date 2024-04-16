@@ -1,19 +1,33 @@
+//! # Cursor
+
+/// Cursor types (shapes).
 #[derive(Copy, Clone)]
-pub enum CursorType {
+pub enum CursorShape {
+  /// Cursor is represented as vertical bar, similar to `│`.
   Bar,
+  /// Cursor is represented as block, similar to `█`.
   Block,
+  /// Cursor is represented as underscore, similar to `_`.
   UnderScore,
 }
 
+/// Cursor properties.
 pub struct Cursor {
-  typ: CursorType,
+  /// Cursor shape.
+  shape: CursorShape,
+  /// Column position.
   col: usize,
+  /// Row position.
   row: usize,
 }
 
 impl Cursor {
-  pub fn new(typ: CursorType, col: usize, row: usize) -> Self {
-    Self { typ, col, row }
+  pub fn new(shape: CursorShape, col: usize, row: usize) -> Self {
+    Self { shape, col, row }
+  }
+
+  pub fn get(&self) -> (usize, usize) {
+    (self.col, self.row)
   }
 
   pub fn set(&mut self, col: usize, row: usize) {
@@ -27,10 +41,6 @@ impl Cursor {
 
   pub fn set_row(&mut self, row: usize) {
     self.row = row;
-  }
-
-  pub fn pos(&self) -> (usize, usize) {
-    (self.col, self.row)
   }
 
   pub fn col(&self) -> usize {
@@ -106,15 +116,15 @@ impl Cursor {
   }
 
   pub fn is_bar(&self) -> bool {
-    matches!(self.typ, CursorType::Bar)
+    matches!(self.shape, CursorShape::Bar)
   }
 
-  pub fn toggle(&mut self) -> CursorType {
-    match self.typ {
-      CursorType::Bar => self.typ = CursorType::Block,
-      CursorType::Block => self.typ = CursorType::UnderScore,
-      CursorType::UnderScore => self.typ = CursorType::Bar,
+  pub fn toggle(&mut self) -> CursorShape {
+    match self.shape {
+      CursorShape::Bar => self.shape = CursorShape::Block,
+      CursorShape::Block => self.shape = CursorShape::UnderScore,
+      CursorShape::UnderScore => self.shape = CursorShape::Bar,
     }
-    self.typ
+    self.shape
   }
 }

@@ -1,6 +1,6 @@
 //! # Text editing plane
 
-use crate::cursor::{Cursor, CursorType};
+use crate::cursor::{Cursor, CursorShape};
 use std::cmp::min;
 use std::fmt;
 use std::fmt::Display;
@@ -96,19 +96,19 @@ impl Plane {
     let iih = information_item_height(&rows);
     Self {
       chars: rows,
-      cursor: Cursor::new(CursorType::Bar, 1, 1),
+      cursor: Cursor::new(CursorShape::Bar, 1, 1),
       iih,
     }
   }
 
   /// Returns the position of the cursor in plane's coordinates.
   pub fn cursor(&self) -> (usize, usize) {
-    self.cursor.pos()
+    self.cursor.get()
   }
 
   /// Returns the character pointed by cursor.
   pub fn char_under_cursor(&self) -> Option<char> {
-    let (col, row) = self.cursor.pos();
+    let (col, row) = self.cursor.get();
     if let Some(row) = self.chars.get(row) {
       if let Some(ch) = row.get(col) {
         return Some(*ch);
@@ -600,7 +600,7 @@ impl Plane {
     }
   }
 
-  pub fn toggle_cursor(&mut self) -> CursorType {
+  pub fn toggle_cursor(&mut self) -> CursorShape {
     self.cursor.toggle()
   }
 }
