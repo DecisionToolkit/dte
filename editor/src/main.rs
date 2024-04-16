@@ -3,7 +3,7 @@ mod keys;
 use crate::keys::{read_key, Key};
 use crossterm::cursor::{MoveTo, SetCursorStyle};
 use crossterm::style::Print;
-use crossterm::terminal::{size, Clear, ClearType};
+use crossterm::terminal::{size, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen};
 use crossterm::{execute, queue, terminal};
 use dtee::{CursorShape, Editor};
 use std::io::{Stdout, Write};
@@ -20,6 +20,7 @@ fn repaint(stdout: &mut Stdout, content: &[Vec<char>]) -> io::Result<()> {
 
 fn run(content: String) -> io::Result<()> {
   let mut stdout = io::stdout();
+  execute!(io::stdout(), EnterAlternateScreen)?;
   execute!(stdout, Clear(ClearType::All))?;
   let (cols, rows) = size()?;
   let mut editor = Editor::new(content, cols as usize, rows as usize);
@@ -96,6 +97,7 @@ fn run(content: String) -> io::Result<()> {
     };
   }
   execute!(stdout, Clear(ClearType::All), SetCursorStyle::DefaultUserShape, MoveTo(0, 0))?;
+  execute!(io::stdout(), LeaveAlternateScreen)?;
   Ok(())
 }
 
