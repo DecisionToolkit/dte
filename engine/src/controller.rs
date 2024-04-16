@@ -20,6 +20,10 @@ impl Controller {
     Self { model, viewport, dirty }
   }
 
+  pub fn offset(&self) -> (usize, usize) {
+    (self.viewport.left(), self.viewport.top())
+  }
+
   pub fn dirty(&self) -> &[Rect] {
     &self.dirty
   }
@@ -37,7 +41,7 @@ impl Controller {
     self.viewport.resize(width, height);
   }
 
-  /// Returns the position of the cursor in viewport's coordinates.
+  /// Returns the cursor position in the text coordinates.
   pub fn cursor_position(&self) -> (usize, usize) {
     let (column, row) = self.model.cursor_position();
     (column.saturating_sub(self.viewport.left()), row.saturating_sub(self.viewport.top()))

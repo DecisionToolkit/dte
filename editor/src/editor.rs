@@ -138,8 +138,9 @@ impl Editor {
   fn action_resize(&mut self, width: usize, height: usize) -> io::Result<()> {
     self.controller.resize(width, height);
     self.repaint()?;
-    let (column, row) = self.controller.cursor_position();
-    execute!(self.stdout, MoveTo(column as u16, row as u16))?;
+    let (col, row) = self.controller.cursor_position();
+    let (left, top) = self.controller.offset();
+    execute!(self.stdout, MoveTo(col.saturating_sub(left) as u16, row.saturating_sub(top) as u16))?;
     Ok(())
   }
 
