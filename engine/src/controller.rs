@@ -24,6 +24,15 @@ impl Controller {
     (self.viewport.left(), self.viewport.top())
   }
 
+  pub fn size(&self) -> (usize, usize) {
+    (self.viewport.width(), self.viewport.height())
+  }
+
+  pub fn invalidate(&mut self, width: usize, height: usize) {
+    self.dirties.clear();
+    self.dirties.push(Rect::new(0, 0, width, height));
+  }
+
   pub fn is_dirty(&self) -> bool {
     !self.dirties.is_empty()
   }

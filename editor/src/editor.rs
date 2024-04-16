@@ -1,51 +1,35 @@
 use crate::keys::{read_key, Key};
-use crossterm::cursor::{MoveTo, SetCursorStyle};
-use crossterm::style::Print;
-use crossterm::{execute, queue, terminal};
+use crate::states::{SizeState, SizeStateChange};
+use crossterm::cursor::{Hide, MoveTo, SetCursorStyle, Show};
+use crossterm::style::{Print, Stylize};
+use crossterm::terminal::{size, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen};
+use crossterm::{execute, queue};
 use dtee::Controller;
 use std::io;
 use std::io::{Stdout, Write};
 
-const MIN_TERMINAL_WIDTH: usize = 20;
-const MIN_TERMINAL_HEIGHT: usize = 5;
-
-enum ResizeState {
-  Normal,
-  TooSmall,
-}
-
-impl From<(usize, usize)> for ResizeState {
-  fn from(value: (usize, usize)) -> Self {
-    if value.0 < MIN_TERMINAL_WIDTH || value.1 < MIN_TERMINAL_HEIGHT {
-      Self::TooSmall
-    } else {
-      Self::Normal
-    }
-  }
-}
-
 pub struct Editor {
   stdout: Stdout,
   controller: Controller,
-  resize_state: ResizeState,
+  size_state: SizeState,
 }
 
 impl Editor {
   /// Creates a new editor initialized with specified text.
   pub fn new(text: String) -> io::Result<Self> {
     let stdout = io::stdout();
-    let (terminal_width, terminal_height) = terminal::size()?;
+    let (terminal_width, terminal_height) = size()?;
     let controller = Controller::new(text, terminal_width as usize, terminal_height as usize);
-    let resize_state: ResizeState = (terminal_width as usize, terminal_height as usize).into();
-    Ok(Self { stdout, controller, resize_state })
+    let size_state = SizeState::new(terminal_width as usize, terminal_width as usize);
+    Ok(Self { stdout, controller, size_state })
   }
 
   /// Starts text editing loop.
   pub fn run(&mut self) -> io::Result<()> {
-    execute!(self.stdout, terminal::EnterAlternateScreen)?;
-    execute!(self.stdout, terminal::Clear(terminal::ClearType::All))?;
+    execute!(self.stdout, EnterAlternateScreen)?;
+    execute!(self.stdout, Clear(ClearType::All))?;
+    execute!(self.stdout, SetCursorStyle::BlinkingBar, Show)?;
     self.repaint()?;
-    execute!(self.stdout, SetCursorStyle::BlinkingBar, MoveTo(1, 1))?;
     loop {
       match read_key() {
         Key::Right => self.action_cursor_move_right()?,
@@ -65,7 +49,7 @@ impl Editor {
         _ => {}
       };
     }
-    execute!(self.stdout, terminal::LeaveAlternateScreen)?;
+    execute!(self.stdout, LeaveAlternateScreen, SetCursorStyle::DefaultUserShape, Show)?;
     Ok(())
   }
 
@@ -156,11 +140,37 @@ impl Editor {
   }
 
   fn action_resize(&mut self, width: usize, height: usize) -> io::Result<()> {
-    self.controller.resize(width, height);
+    self.size_state.resize(width, height);
+    match self.size_state.change() {
+      SizeStateChange::Normal => {
+        self.controller.resize(width, height);
+        self.action_resize_normal(width, height)?
+      }
+      SizeStateChange::IntoNormal => {
+        execute!(self.stdout, Show)?;
+        self.controller.invalidate(width, height);
+        self.action_resize_normal(width, height)?;
+      }
+      SizeStateChange::IntoSmall => {
+        execute!(self.stdout, Hide)?;
+        self.action_resize_small(width, height)?
+      }
+      _ => {}
+    }
+    Ok(())
+  }
+
+  fn action_resize_normal(&mut self, _width: usize, _height: usize) -> io::Result<()> {
     self.repaint()?;
     let (col, row) = self.controller.cursor_position();
     let (left, top) = self.controller.offset();
     execute!(self.stdout, MoveTo(col.saturating_sub(left) as u16, row.saturating_sub(top) as u16))?;
+    Ok(())
+  }
+
+  fn action_resize_small(&mut self, _width: usize, _height: usize) -> io::Result<()> {
+    execute!(self.stdout, Clear(ClearType::All))?;
+    execute!(self.stdout, MoveTo(0, 0), Print("I'm too small!".red().bold()))?;
     Ok(())
   }
 
@@ -182,12 +192,8 @@ impl Editor {
           }
         }
       }
-      return self.stdout.flush();
+      self.stdout.flush()?;
     }
     Ok(())
-  }
-
-  fn is_resize_normal(&self) -> bool {
-    matches!(self.resize_state, ResizeState::Normal)
   }
 }

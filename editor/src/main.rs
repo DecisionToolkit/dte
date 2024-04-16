@@ -1,5 +1,6 @@
 mod editor;
 mod keys;
+mod states;
 
 use crate::editor::Editor;
 use crossterm::terminal;
