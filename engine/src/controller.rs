@@ -8,7 +8,7 @@ pub struct Controller {
   /// Text viewport.
   viewport: Rect,
   /// Dirty parts of the viewport to be refreshed in view.
-  dirty: Vec<Rect>,
+  dirties: Vec<Rect>,
 }
 
 impl Controller {
@@ -16,27 +16,31 @@ impl Controller {
     let model = Model::new(text);
     let viewport = Rect::new(0, 0, width, height);
     let (columns, rows) = model.size();
-    let dirty = vec![Rect::new(0, 0, min(width, columns), min(height, rows))];
-    Self { model, viewport, dirty }
+    let dirties = vec![Rect::new(0, 0, min(width, columns), min(height, rows))];
+    Self { model, viewport, dirties }
   }
 
   pub fn offset(&self) -> (usize, usize) {
     (self.viewport.left(), self.viewport.top())
   }
 
-  pub fn dirty(&self) -> &[Rect] {
-    &self.dirty
+  pub fn is_dirty(&self) -> bool {
+    !self.dirties.is_empty()
+  }
+
+  pub fn dirties(&self) -> &[Rect] {
+    &self.dirties
   }
 
   pub fn resize(&mut self, width: usize, height: usize) {
-    self.dirty.clear();
+    self.dirties.clear();
     let old_width = self.viewport.width();
     let old_height = self.viewport.height();
     if width > old_width {
-      self.dirty.push(Rect::new(old_width, 0, width - old_width, height));
+      self.dirties.push(Rect::new(old_width, 0, width - old_width, height));
     }
     if height > old_height {
-      self.dirty.push(Rect::new(0, old_height, width, height - old_height));
+      self.dirties.push(Rect::new(0, old_height, width, height - old_height));
     }
     self.viewport.resize(width, height);
   }

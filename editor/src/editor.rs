@@ -6,18 +6,38 @@ use dtee::Controller;
 use std::io;
 use std::io::{Stdout, Write};
 
+const MIN_TERMINAL_WIDTH: usize = 20;
+const MIN_TERMINAL_HEIGHT: usize = 5;
+
+enum ResizeState {
+  Normal,
+  TooSmall,
+}
+
+impl From<(usize, usize)> for ResizeState {
+  fn from(value: (usize, usize)) -> Self {
+    if value.0 < MIN_TERMINAL_WIDTH || value.1 < MIN_TERMINAL_HEIGHT {
+      Self::TooSmall
+    } else {
+      Self::Normal
+    }
+  }
+}
+
 pub struct Editor {
   stdout: Stdout,
   controller: Controller,
+  resize_state: ResizeState,
 }
 
 impl Editor {
   /// Creates a new editor initialized with specified text.
   pub fn new(text: String) -> io::Result<Self> {
     let stdout = io::stdout();
-    let (columns, rows) = terminal::size()?;
-    let controller = Controller::new(text, columns as usize, rows as usize);
-    Ok(Self { stdout, controller })
+    let (terminal_width, terminal_height) = terminal::size()?;
+    let controller = Controller::new(text, terminal_width as usize, terminal_height as usize);
+    let resize_state: ResizeState = (terminal_width as usize, terminal_height as usize).into();
+    Ok(Self { stdout, controller, resize_state })
   }
 
   /// Starts text editing loop.
@@ -151,15 +171,23 @@ impl Editor {
 
   /// Refreshes dirty regions.
   fn repaint(&mut self) -> io::Result<()> {
-    for rect in self.controller.dirty() {
-      let top = rect.top();
-      let left = rect.left();
-      for (r, row) in self.controller.text().iter().skip(top).take(rect.height()).enumerate() {
-        for (c, ch) in row.iter().skip(left).take(rect.width()).enumerate() {
-          let _ = queue!(self.stdout, MoveTo((left + c) as u16, (top + r) as u16), Print(ch));
+    if self.controller.is_dirty() {
+      let (offset_left, offset_top) = self.controller.offset();
+      for rect in self.controller.dirties() {
+        let top = rect.top().saturating_sub(offset_left);
+        let left = rect.left().saturating_sub(offset_top);
+        for (row_index, row) in self.controller.text().iter().skip(top).take(rect.height()).enumerate() {
+          for (col_index, ch) in row.iter().skip(left).take(rect.width()).enumerate() {
+            let _ = queue!(self.stdout, MoveTo((left + col_index) as u16, (top + row_index) as u16), Print(ch));
+          }
         }
       }
+      return self.stdout.flush();
     }
-    self.stdout.flush()
+    Ok(())
+  }
+
+  fn is_resize_normal(&self) -> bool {
+    matches!(self.resize_state, ResizeState::Normal)
   }
 }
