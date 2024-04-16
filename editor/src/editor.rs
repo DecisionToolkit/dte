@@ -145,7 +145,7 @@ impl Editor {
   }
 
   fn action_write(&mut self, _ch: char) -> io::Result<()> {
-    // execute!(self.stdout, Print(ch))?,
+    //TODO implement editing action
     Ok(())
   }
 
