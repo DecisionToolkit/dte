@@ -1,8 +1,7 @@
 //! # Decision table editor engine
 
+mod controller;
 mod cursor;
-mod editor;
-mod plane;
+mod model;
 
-pub use cursor::{Cursor, CursorShape};
-pub use editor::Editor;
+pub use controller::Controller;

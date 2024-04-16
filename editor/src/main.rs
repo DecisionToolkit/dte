@@ -5,7 +5,7 @@ use crossterm::cursor::{MoveTo, SetCursorStyle};
 use crossterm::style::Print;
 use crossterm::terminal::{size, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen};
 use crossterm::{execute, queue, terminal};
-use dtee::{CursorShape, Editor};
+use dtee::Controller;
 use std::io::{Stdout, Write};
 use std::{fs, io};
 
@@ -23,7 +23,7 @@ fn run(content: String) -> io::Result<()> {
   execute!(io::stdout(), EnterAlternateScreen)?;
   execute!(stdout, Clear(ClearType::All))?;
   let (cols, rows) = size()?;
-  let mut editor = Editor::new(content, cols as usize, rows as usize);
+  let mut editor = Controller::new(content, cols as usize, rows as usize);
   repaint(&mut stdout, editor.rows())?;
   execute!(stdout, SetCursorStyle::BlinkingBar, MoveTo(1, 1))?;
   loop {
@@ -80,15 +80,17 @@ fn run(content: String) -> io::Result<()> {
       }
       Key::CtrlQ => break,
       Key::Insert => {
-        match editor.toggle_cursor() {
-          CursorShape::Bar => execute!(stdout, SetCursorStyle::BlinkingBar)?,
-          CursorShape::Block => execute!(stdout, SetCursorStyle::BlinkingBlock)?,
-          CursorShape::UnderScore => execute!(stdout, SetCursorStyle::BlinkingUnderScore)?,
+        editor.cursor_toggle_bar_block();
+        if editor.cursor_is_bar() {
+          execute!(stdout, SetCursorStyle::BlinkingBar)?;
         }
-        // refresh character under cursor
-        if let Some(ch) = editor.char_under_cursor() {
-          let (col, row) = editor.cursor();
-          execute!(stdout, Print(ch), MoveTo(col as u16, row as u16))?;
+        if editor.cursor_is_block() {
+          execute!(stdout, SetCursorStyle::BlinkingBlock)?;
+        }
+        // reprint the character under the cursor that has changed
+        if let Some(ch) = editor.cursor_char() {
+          let (column, row) = editor.cursor_position();
+          execute!(stdout, Print(ch), MoveTo(column as u16, row as u16))?;
         }
       }
       Key::Char(ch) => execute!(stdout, Print(ch))?,

@@ -49,18 +49,18 @@ enum Op {
   Delete,
 }
 
-/// Plane containing rows of characters.
-pub struct Plane {
-  /// Rows in plane.
+/// A model for textual content.
+pub(crate) struct Model {
+  /// Rows of text.
   pub rows: Vec<Vec<char>>,
-  /// Cursor properties.
+  /// Cursor.
   cursor: Cursor,
-  /// Information item height (0 when not present).
-  iih: usize,
+  /// Information item height (=0 when not present).
+  ii_height: usize,
 }
 
-impl Display for Plane {
-  /// Converts a [Plane] into its string representation.
+impl Display for Model {
+  /// Implements [Display] trait for [Model].
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     write!(
       f,
@@ -78,7 +78,7 @@ impl Display for Plane {
   }
 }
 
-impl Plane {
+impl Model {
   /// Creates a new plane with specified content.
   pub fn new(content: String) -> Self {
     let mut rows = vec![];
@@ -92,21 +92,18 @@ impl Plane {
         rows.push(columns);
       }
     }
-    let iih = information_item_height(&rows);
-    Self {
-      rows,
-      cursor: Cursor::new(CursorShape::Bar, 1, 1),
-      iih,
-    }
+    let cursor = Cursor::new(CursorShape::Bar, 1, 1);
+    let ii_height = Self::information_item_height(&rows);
+    Self { rows, cursor, ii_height }
   }
 
   /// Returns the position of the cursor in plane's coordinates.
-  pub fn cursor(&self) -> (usize, usize) {
+  pub fn cursor_position(&self) -> (usize, usize) {
     self.cursor.get()
   }
 
   /// Returns the character pointed by cursor.
-  pub fn char_under_cursor(&self) -> Option<char> {
+  pub fn cursor_char(&self) -> Option<char> {
     let (col, row) = self.cursor.get();
     if let Some(row) = self.rows.get(row) {
       if let Some(ch) = row.get(col) {
@@ -375,8 +372,8 @@ impl Plane {
 
   /// Updated join character between information item name cell and the body of the decision table.
   fn update_joins(&mut self) {
-    if self.iih > 0 {
-      let row_index = self.iih;
+    if self.ii_height > 0 {
+      let row_index = self.ii_height;
       // remove old joining character...
       for ch in &mut self.rows[row_index] {
         match ch {
@@ -589,21 +586,21 @@ impl Plane {
 
   /// Returns the number of rows to skip and to take while iterating over rows.
   fn rows_skip_and_take(&self, op: Op) -> (usize, usize) {
-    if self.cursor.row() < self.iih {
+    if self.cursor.row() < self.ii_height {
       // operation takes place in information item cell
       match op {
         Op::Insert => {
           //
           let pos = self.last_col_before_vert_line_right();
-          if pos + 1 >= self.rows[self.iih].len() {
+          if pos + 1 >= self.rows[self.ii_height].len() {
             (0, self.rows.len())
           } else {
-            (0, self.iih)
+            (0, self.ii_height)
           }
         }
         Op::Delete => {
           //
-          (0, self.iih)
+          (0, self.ii_height)
         }
       }
     } else {
@@ -611,14 +608,14 @@ impl Plane {
       match op {
         Op::Insert => {
           //
-          (self.iih, self.rows.len() - self.iih)
+          (self.ii_height, self.rows.len() - self.ii_height)
         }
         Op::Delete => {
           //
           let l_first = self.rows[0].len();
           let l_current = self.rows[self.cursor.row()].len();
           if l_current > l_first {
-            (self.iih, self.rows.len() - self.iih)
+            (self.ii_height, self.rows.len() - self.ii_height)
           } else {
             (0, self.rows.len())
           }
@@ -627,24 +624,41 @@ impl Plane {
     }
   }
 
-  pub fn toggle_cursor(&mut self) -> CursorShape {
-    self.cursor.toggle()
+  pub fn cursor_toggle(&mut self) {
+    self.cursor.toggle();
   }
-}
 
-/// Calculates the height of the information item cell at the beginning of the decision table.
-fn information_item_height(rows: &[Vec<char>]) -> usize {
-  for (row_index, row) in rows.iter().enumerate() {
-    for (col_index, ch) in row.iter().enumerate() {
-      if col_index == 0 && *ch != '┌' && *ch != '├' {
-        // skip rows that do not begin with horizontal line crossing
-        break;
-      }
-      if *ch == '╥' {
-        // index of the row that contains '╥' character is the height
-        return row_index;
+  pub fn cursor_toggle_bar_block(&mut self) {
+    self.cursor.toggle_bar_block();
+  }
+
+  pub fn cursor_is_bar(&self) -> bool {
+    self.cursor.is_bar()
+  }
+
+  pub fn cursor_is_block(&self) -> bool {
+    self.cursor.is_block()
+  }
+
+  pub fn cursor_is_underscore(&self) -> bool {
+    self.cursor.is_underscore()
+  }
+
+  /// Calculates the height of the information item cell at the beginning of the decision table.
+  fn information_item_height(rows: &[Vec<char>]) -> usize {
+    for (row_index, row) in rows.iter().enumerate() {
+      for (col_index, ch) in row.iter().enumerate() {
+        if col_index == 0 && *ch != '┌' && *ch != '├' {
+          // skip rows that do not begin with '┌' or '├'
+          break;
+        }
+        if *ch == '╥' {
+          // index of the row that contains '╥' character
+          // is the information item height
+          return row_index;
+        }
       }
     }
+    0
   }
-  0
 }
