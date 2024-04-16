@@ -49,11 +49,11 @@ enum Op {
   Delete,
 }
 
-/// A model for textual content.
+/// Model for edited text.
 pub(crate) struct Model {
-  /// Rows of text.
-  pub rows: Vec<Vec<char>>,
-  /// Cursor.
+  /// Edited text stored as rows of characters.
+  pub text: Vec<Vec<char>>,
+  /// Current cursor position and attributes.
   cursor: Cursor,
   /// Information item height (=0 when not present).
   ii_height: usize,
@@ -66,7 +66,7 @@ impl Display for Model {
       f,
       "{}",
       self
-        .rows
+        .text
         .iter()
         .fold("".to_string(), |plane, row| format!(
           "{}\n{}",
@@ -94,7 +94,12 @@ impl Model {
     }
     let cursor = Cursor::new(CursorShape::Bar, 1, 1);
     let ii_height = Self::information_item_height(&rows);
-    Self { rows, cursor, ii_height }
+    Self { text: rows, cursor, ii_height }
+  }
+
+  /// Returns the maximal column width and height of the text.
+  pub fn size(&self) -> (usize, usize) {
+    (self.text.iter().map(|row| row.len()).max().unwrap_or_default(), self.text.len())
   }
 
   /// Returns the position of the cursor in plane's coordinates.
@@ -105,7 +110,7 @@ impl Model {
   /// Returns the character pointed by cursor.
   pub fn cursor_char(&self) -> Option<char> {
     let (col, row) = self.cursor.get();
-    if let Some(row) = self.rows.get(row) {
+    if let Some(row) = self.text.get(row) {
       if let Some(ch) = row.get(col) {
         return Some(*ch);
       }
@@ -113,13 +118,13 @@ impl Model {
     None
   }
 
-  pub fn rows(&self) -> &[Vec<char>] {
-    &self.rows
+  pub fn text(&self) -> &[Vec<char>] {
+    &self.text
   }
 
   /// Returns `true` if the current cursor position is valid.
   fn is_valid_cursor_pos(&self) -> bool {
-    (1..self.rows.len() - 1).contains(&self.cursor.row()) && (1..self.rows[self.cursor.col()].len() - 1).contains(&self.cursor.col())
+    (1..self.text.len() - 1).contains(&self.cursor.row()) && (1..self.text[self.cursor.col()].len() - 1).contains(&self.cursor.col())
   }
 
   /// Moves cursor up in the same column.
@@ -272,8 +277,8 @@ impl Model {
 
   fn row(&self) -> Option<&[char]> {
     let row = self.cursor.row();
-    if row > 0 && row < self.rows.len() - 1 {
-      return Some(&self.rows[row]);
+    if row > 0 && row < self.text.len() - 1 {
+      return Some(&self.text[row]);
     }
     None
   }
@@ -299,7 +304,7 @@ impl Model {
     if self.is_valid_cursor_pos() {
       let pos = self.last_col_before_vert_line_right();
       let (found, offset) = self.is_whitespace_before_vert_line();
-      let columns = &mut self.rows[self.cursor.row()];
+      let columns = &mut self.text[self.cursor.row()];
       columns.insert(self.cursor.col(), ch);
       if found {
         columns.remove(self.cursor.col() + offset + 1);
@@ -315,8 +320,8 @@ impl Model {
   pub fn delete_char_before(&mut self) {
     if self.is_allowed_position(0, -1) {
       let pos = self.last_col_before_vert_line_right();
-      self.rows[self.cursor.row()].insert(pos + 1, CH_WS);
-      self.rows[self.cursor.row()].remove(self.cursor.col() - 1);
+      self.text[self.cursor.row()].insert(pos + 1, CH_WS);
+      self.text[self.cursor.row()].remove(self.cursor.col() - 1);
       if self.is_whitespace_column_before_vert_line(pos, Op::Delete) {
         self.delete_column_before_vert_line(pos);
       }
@@ -328,12 +333,12 @@ impl Model {
   /// Deletes a character placed *under* the cursor.
   pub fn delete_char(&mut self) {
     let pos = self.last_col_before_vert_line_right();
-    self.rows[self.cursor.row()].insert(pos + 1, CH_WS);
-    self.rows[self.cursor.row()].remove(self.cursor.col());
+    self.text[self.cursor.row()].insert(pos + 1, CH_WS);
+    self.text[self.cursor.row()].remove(self.cursor.col());
     if self.is_whitespace_column_before_vert_line(pos, Op::Delete) {
       self.delete_column_before_vert_line(pos);
     }
-    if is_frame!(self.rows[self.cursor.row()][self.cursor.col()]) {
+    if is_frame!(self.text[self.cursor.row()][self.cursor.col()]) {
       self.cursor_move(0, -1);
     }
     self.update_joins();
@@ -345,7 +350,7 @@ impl Model {
     let col_last = self.last_col_before_vert_line_right();
     let row_last = self.last_row_before_horz_line_below();
     // check if the last row before the horizontal line is empty (contains only characters)
-    let empty = self.rows[row_last][col_first..=col_last].iter().all(|ch| *ch == CH_WS);
+    let empty = self.text[row_last][col_first..=col_last].iter().all(|ch| *ch == CH_WS);
     if !empty {
       // add new empty line before the horizontal line
     }
@@ -353,8 +358,8 @@ impl Model {
 
     // move characters from the right side of the split to the beginning of the next line
     for (offset, col_index) in (self.cursor.col()..=col_last).enumerate() {
-      self.rows[self.cursor.row() + 1][col_first + offset] = self.rows[self.cursor.row()][col_index];
-      self.rows[self.cursor.row()][col_index] = CH_WS;
+      self.text[self.cursor.row() + 1][col_first + offset] = self.text[self.cursor.row()][col_index];
+      self.text[self.cursor.row()][col_index] = CH_WS;
     }
     self.cursor.inc_row(1);
     self.cursor.set_col(col_first);
@@ -364,7 +369,7 @@ impl Model {
   fn cursor_move(&mut self, row_offset: isize, col_offset: isize) {
     if self.is_allowed_position(row_offset, col_offset) {
       let (row, col) = self.cursor.adjusted_to_remove(row_offset, col_offset);
-      if (1..self.rows.len() - 1).contains(&row) && (1..self.rows[row].len() - 1).contains(&col) {
+      if (1..self.text.len() - 1).contains(&row) && (1..self.text[row].len() - 1).contains(&col) {
         self.cursor.set(col, row);
       }
     }
@@ -375,7 +380,7 @@ impl Model {
     if self.ii_height > 0 {
       let row_index = self.ii_height;
       // remove old joining character...
-      for ch in &mut self.rows[row_index] {
+      for ch in &mut self.text[row_index] {
         match ch {
           '┴' => *ch = '─',
           '┼' => *ch = '┬',
@@ -384,9 +389,9 @@ impl Model {
         }
       }
       // ...and replace with new joining character
-      let col_index = self.rows[0].len() - 1;
-      if col_index < self.rows[row_index].len() {
-        let ch = &mut self.rows[row_index][col_index];
+      let col_index = self.text[0].len() - 1;
+      if col_index < self.text[row_index].len() {
+        let ch = &mut self.text[row_index][col_index];
         match ch {
           '─' => *ch = '┴',
           '┬' => *ch = '┼',
@@ -400,8 +405,8 @@ impl Model {
   /// Returns the index of the first column after the vertical line
   /// to the left from the character pointed by current cursor position.
   fn first_col_after_vert_line_left(&self) -> usize {
-    let offset = self.rows[self.cursor.row()].len();
-    for (col_index, ch) in self.rows[self.cursor.row()].iter().rev().enumerate().skip(offset - self.cursor.col() + 1) {
+    let offset = self.text[self.cursor.row()].len();
+    for (col_index, ch) in self.text[self.cursor.row()].iter().rev().enumerate().skip(offset - self.cursor.col() + 1) {
       if is_vert_line_right!(ch) {
         return offset - col_index;
       }
@@ -412,7 +417,7 @@ impl Model {
   /// Returns the index of the last column before the vertical line
   /// to the right from the character pointed by current cursor position.
   fn last_col_before_vert_line_right(&self) -> usize {
-    for (col_index, ch) in self.rows[self.cursor.row()].iter().enumerate().skip(self.cursor.col()) {
+    for (col_index, ch) in self.text[self.cursor.row()].iter().enumerate().skip(self.cursor.col()) {
       if is_vert_line_left!(ch) {
         return col_index - 1;
       }
@@ -423,7 +428,7 @@ impl Model {
   /// Returns the index of the last row before the horizontal line
   /// below the character pointed by current cursor position.
   fn last_row_before_horz_line_below(&self) -> usize {
-    for (row_index, row) in self.rows.iter().enumerate().skip(self.cursor.row()) {
+    for (row_index, row) in self.text.iter().enumerate().skip(self.cursor.row()) {
       if (1..row.len() - 1).contains(&self.cursor.col()) && is_horz_line_top!(row[self.cursor.col()]) {
         return row_index - 1;
       }
@@ -434,7 +439,7 @@ impl Model {
   fn is_whitespace_before_vert_line(&self) -> (bool, usize) {
     let mut count = 0;
     let mut offset = 0;
-    for ch in &self.rows[self.cursor.row()][self.cursor.col() + 1..] {
+    for ch in &self.text[self.cursor.row()][self.cursor.col() + 1..] {
       if is_vert_line_left!(ch) {
         break;
       } else if *ch == CH_WS {
@@ -449,7 +454,7 @@ impl Model {
 
   fn insert_column_before_vert_line(&mut self, col_pos: usize) {
     let (skip, take) = self.rows_skip_and_take(Op::Insert);
-    for (row_index, row) in self.rows.iter_mut().enumerate().skip(skip).take(take) {
+    for (row_index, row) in self.text.iter_mut().enumerate().skip(skip).take(take) {
       if row_index != self.cursor.row() && col_pos < row.len() - 1 {
         let mut found_char = CH_WS;
         let mut found_index = 0;
@@ -474,11 +479,11 @@ impl Model {
   /// to the right from the specified position in each checked row.
   fn is_whitespace_column_before_vert_line(&self, pos: usize, op: Op) -> bool {
     let (skip, take) = self.rows_skip_and_take(op);
-    for (row_index, row) in self.rows.iter().enumerate().skip(skip).take(take) {
+    for (row_index, row) in self.text.iter().enumerate().skip(skip).take(take) {
       // check if the current column is not after the end of each row
       if (1..row.len() - 1).contains(&pos) {
         // check the character at column position, if box-drawing then skip
-        let ch = self.rows[row_index][pos];
+        let ch = self.text[row_index][pos];
         if !is_frame!(ch) {
           // move to the right until vertical line is found
           for chars in row[pos - 1..].windows(3) {
@@ -507,7 +512,7 @@ impl Model {
   /// from the specified position.
   fn delete_column_before_vert_line(&mut self, pos: usize) {
     let (skip, take) = self.rows_skip_and_take(Op::Delete);
-    for row in self.rows.iter_mut().skip(skip).take(take) {
+    for row in self.text.iter_mut().skip(skip).take(take) {
       if pos < row.len() - 1 {
         let mut found_index = 0;
         for (col_index, ch) in row[pos..].iter().enumerate() {
@@ -526,8 +531,8 @@ impl Model {
   /// Returns `true` when the character at the specified position is a horizontal line.
   fn is_horz_line(&self, row_offset: isize, col_offset: isize) -> bool {
     let (r, c) = self.cursor.adjusted_to_remove(row_offset, col_offset);
-    if r < self.rows.len() && c < self.rows[r].len() {
-      is_horz_line_top!(self.rows[r][c])
+    if r < self.text.len() && c < self.text[r].len() {
+      is_horz_line_top!(self.text[r][c])
     } else {
       false
     }
@@ -536,8 +541,8 @@ impl Model {
   /// Returns `true` when the character at the specified position is a vertical line.
   fn is_vert_line(&self, row_offset: isize, col_offset: isize) -> bool {
     let (col, row) = self.cursor.offset(col_offset, row_offset);
-    if row < self.rows.len() && col < self.rows[row].len() {
-      matches!(self.rows[row][col], '│' | '║')
+    if row < self.text.len() && col < self.text[row].len() {
+      matches!(self.text[row][col], '│' | '║')
     } else {
       false
     }
@@ -546,11 +551,11 @@ impl Model {
   /// Returns `true` when the cursor position is allowed according to horizontal and vertical offset.
   fn is_allowed_position(&self, row_offset: isize, col_offset: isize) -> bool {
     let (col, row) = self.cursor.offset(col_offset, row_offset);
-    if row > 0 && row < self.rows.len() - 1 && col > 0 && col < self.rows[row].len() {
+    if row > 0 && row < self.text.len() - 1 && col > 0 && col < self.text[row].len() {
       if self.cursor.is_bar() {
-        return !is_frame!(self.rows[row][col]) || is_vert_line_left!(self.rows[row][col]);
-      } else if col < self.rows[row].len() - 1 {
-        return !is_frame!(self.rows[row][col]);
+        return !is_frame!(self.text[row][col]) || is_vert_line_left!(self.text[row][col]);
+      } else if col < self.text[row].len() - 1 {
+        return !is_frame!(self.text[row][col]);
       }
     }
     false
@@ -558,7 +563,7 @@ impl Model {
 
   /// Returns the offset of the vertical line to the right from current cursor position.
   fn get_vert_line_offset_right(&self) -> Option<isize> {
-    if let Some(row) = self.rows.get(self.cursor.row()) {
+    if let Some(row) = self.text.get(self.cursor.row()) {
       if self.cursor.col() < row.len() - 1 {
         for (offset, ch) in row[self.cursor.col()..].iter().enumerate() {
           if is_vert_line_left!(ch) {
@@ -572,7 +577,7 @@ impl Model {
 
   /// Returns the offset of the vertical line to the left from current cursor position.
   fn get_vert_line_offset_left(&self) -> Option<isize> {
-    if let Some(row) = self.rows.get(self.cursor.row()) {
+    if let Some(row) = self.text.get(self.cursor.row()) {
       if self.cursor.col() < row.len() {
         for (offset, ch) in row[0..self.cursor.col()].iter().rev().enumerate() {
           if is_vert_line_right!(ch) {
@@ -592,8 +597,8 @@ impl Model {
         Op::Insert => {
           //
           let pos = self.last_col_before_vert_line_right();
-          if pos + 1 >= self.rows[self.ii_height].len() {
-            (0, self.rows.len())
+          if pos + 1 >= self.text[self.ii_height].len() {
+            (0, self.text.len())
           } else {
             (0, self.ii_height)
           }
@@ -608,16 +613,16 @@ impl Model {
       match op {
         Op::Insert => {
           //
-          (self.ii_height, self.rows.len() - self.ii_height)
+          (self.ii_height, self.text.len() - self.ii_height)
         }
         Op::Delete => {
           //
-          let l_first = self.rows[0].len();
-          let l_current = self.rows[self.cursor.row()].len();
+          let l_first = self.text[0].len();
+          let l_current = self.text[self.cursor.row()].len();
           if l_current > l_first {
-            (self.ii_height, self.rows.len() - self.ii_height)
+            (self.ii_height, self.text.len() - self.ii_height)
           } else {
-            (0, self.rows.len())
+            (0, self.text.len())
           }
         }
       }

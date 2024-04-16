@@ -1,46 +1,50 @@
 use crate::model::Model;
-
-struct Viewport {
-  left: usize,
-  top: usize,
-  width: usize,
-  height: usize,
-}
-
-impl Viewport {
-  fn new(left: usize, top: usize, width: usize, height: usize) -> Self {
-    Self { left, top, width, height }
-  }
-}
+use crate::rect::Rect;
+use std::cmp::min;
 
 pub struct Controller {
   /// Model containing edited text.
   model: Model,
   /// Text viewport.
-  viewport: Viewport,
+  viewport: Rect,
+  /// Dirty parts of the viewport to be refreshed in view.
+  dirty: Vec<Rect>,
 }
 
 impl Controller {
   pub fn new(text: String, width: usize, height: usize) -> Self {
-    Self {
-      model: Model::new(text),
-      viewport: Viewport::new(0, 0, width, height),
-    }
+    let model = Model::new(text);
+    let viewport = Rect::new(0, 0, width, height);
+    let (columns, rows) = model.size();
+    let dirty = vec![Rect::new(0, 0, min(width, columns), min(height, rows))];
+    Self { model, viewport, dirty }
+  }
+
+  pub fn dirty(&self) -> &[Rect] {
+    &self.dirty
   }
 
   pub fn resize(&mut self, width: usize, height: usize) {
-    self.viewport.width = width;
-    self.viewport.height = height;
+    self.dirty.clear();
+    let old_width = self.viewport.width();
+    let old_height = self.viewport.height();
+    if width > old_width {
+      self.dirty.push(Rect::new(old_width, 0, width - old_width, height));
+    }
+    if height > old_height {
+      self.dirty.push(Rect::new(0, old_height, width, height - old_height));
+    }
+    self.viewport.resize(width, height);
   }
 
   /// Returns the position of the cursor in viewport's coordinates.
   pub fn cursor_position(&self) -> (usize, usize) {
     let (column, row) = self.model.cursor_position();
-    (column.saturating_sub(self.viewport.left), row.saturating_sub(self.viewport.top))
+    (column.saturating_sub(self.viewport.left()), row.saturating_sub(self.viewport.top()))
   }
 
-  pub fn rows(&self) -> &[Vec<char>] {
-    self.model.rows()
+  pub fn text(&self) -> &[Vec<char>] {
+    self.model.text()
   }
 
   pub fn cursor_move_right(&mut self) -> Option<(usize, usize)> {
