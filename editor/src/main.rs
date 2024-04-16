@@ -23,7 +23,7 @@ fn run(content: String) -> io::Result<()> {
   execute!(stdout, Clear(ClearType::All))?;
   let (cols, rows) = size()?;
   let mut editor = Editor::new(content, cols as usize, rows as usize);
-  repaint(&mut stdout, editor.content())?;
+  repaint(&mut stdout, editor.rows())?;
   execute!(stdout, SetCursorStyle::BlinkingBar, MoveTo(1, 1))?;
   loop {
     match read_key() {

@@ -40,8 +40,8 @@ impl Editor {
     (col.saturating_sub(self.viewport.left), row.saturating_sub(self.viewport.top))
   }
 
-  pub fn content(&self) -> &Vec<Vec<char>> {
-    self.plane.content()
+  pub fn rows(&self) -> &[Vec<char>] {
+    self.plane.rows()
   }
 
   pub fn cursor_move_right(&mut self) -> Option<(usize, usize)> {

@@ -116,7 +116,7 @@ impl Plane {
     None
   }
 
-  pub fn content(&self) -> &Vec<Vec<char>> {
+  pub fn rows(&self) -> &[Vec<char>] {
     &self.rows
   }
 
@@ -260,7 +260,7 @@ impl Plane {
     if self.cursor_move_cell_start() {
       if let Some(row) = self.row() {
         if let Some(chars) = self.before(row) {
-          for (mut offset, ch) in chars.iter().rev().enumerate() {
+          for (offset, ch) in chars.iter().rev().enumerate() {
             if !is_frame!(ch) {
               self.cursor.dec_col(if self.cursor.is_bar() { offset } else { offset.saturating_add(1) });
               break;
