@@ -6,9 +6,8 @@ use crossterm::style::Print;
 use crossterm::terminal::{size, Clear, ClearType};
 use crossterm::{execute, queue, terminal};
 use dtee::{CursorShape, Editor};
-use std::fs;
-use std::io;
 use std::io::{Stdout, Write};
+use std::{fs, io};
 
 fn repaint(stdout: &mut Stdout, content: &[Vec<char>]) -> io::Result<()> {
   for (row_index, row) in content.iter().enumerate() {

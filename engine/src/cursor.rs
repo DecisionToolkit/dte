@@ -55,7 +55,7 @@ impl Cursor {
     self.col = self.col.saturating_sub(value);
   }
 
-  pub fn adj_col(&mut self, value: isize) {
+  pub fn move_col(&mut self, value: isize) {
     if value < 0 {
       self.col = self.col.saturating_sub(value.unsigned_abs());
     } else {
@@ -75,7 +75,7 @@ impl Cursor {
     self.row = self.row.saturating_sub(value);
   }
 
-  pub fn adj_row(&mut self, value: isize) {
+  pub fn move_row(&mut self, value: isize) {
     if value < 0 {
       self.row = self.row.saturating_sub(value.unsigned_abs());
     } else {
@@ -83,7 +83,7 @@ impl Cursor {
     }
   }
 
-  pub fn adjusted(&self, row_offset: isize, col_offset: isize) -> (usize, usize) {
+  pub fn adjusted_to_remove(&self, row_offset: isize, col_offset: isize) -> (usize, usize) {
     (
       if row_offset < 0 {
         self.row.saturating_sub(row_offset.unsigned_abs())
@@ -98,9 +98,22 @@ impl Cursor {
     )
   }
 
-  /// This should be the target version.
-  /// TODO fix
-  pub fn adjusted_1(&self, col_offset: isize, row_offset: isize) -> (usize, usize) {
+  /// Calculates the cursor position after applying specified offsets.
+  ///
+  /// # Examples
+  ///
+  /// ```
+  /// use dtee::{Cursor, CursorShape};
+  ///
+  /// let cursor = Cursor::new(CursorShape::Bar, 10, 20);
+  /// assert_eq!((11, 22), cursor.offset(1, 2));
+  /// assert_eq!((9, 18), cursor.offset(-1, -2));
+  /// assert_eq!((0, 0), cursor.offset(-11, -21));
+  ///
+  /// let cursor = Cursor::new(CursorShape::Bar, usize::MAX, usize::MAX);
+  /// assert_eq!((usize::MAX, usize::MAX), cursor.offset(isize::MAX, isize::MAX));
+  /// ```
+  pub fn offset(&self, col_offset: isize, row_offset: isize) -> (usize, usize) {
     (
       if col_offset < 0 {
         self.col.saturating_sub(col_offset.unsigned_abs())
@@ -115,8 +128,19 @@ impl Cursor {
     )
   }
 
+  /// Returns `true` when the current shape is bar (`│`).
   pub fn is_bar(&self) -> bool {
     matches!(self.shape, CursorShape::Bar)
+  }
+
+  /// Returns `true` when the current shape is block (`█`).
+  pub fn is_block(&self) -> bool {
+    matches!(self.shape, CursorShape::Block)
+  }
+
+  /// Returns `true` when the current shape is underscore (`_`).
+  pub fn is_underscore(&self) -> bool {
+    matches!(self.shape, CursorShape::UnderScore)
   }
 
   pub fn toggle(&mut self) -> CursorShape {
