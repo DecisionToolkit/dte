@@ -53,10 +53,15 @@ dependencies = [
 
 [[package]]
 name = "dte"
-version = "0.0.0"
+version = "0.0.1"
 dependencies = [
  "crossterm",
+ "dtee",
 ]
+
+[[package]]
+name = "dtee"
+version = "0.0.1"
 
 [[package]]
 name = "libc"

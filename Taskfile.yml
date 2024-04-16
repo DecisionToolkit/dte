@@ -7,7 +7,7 @@ tasks:
   build:
     desc: Builds in debug mode
     cmds:
-      - cmd: cargo +stable build
+      - cmd: cargo +stable build --workspace
 
   clean:
     desc: Cleans all targets
@@ -17,24 +17,24 @@ tasks:
   clippy:
     desc: Runs clippy for all targets
     cmds:
-      - cmd: cargo +nightly clippy --all-targets
+      - cmd: cargo +nightly clippy --workspace --all-targets
 
   doc:
     desc: Generates documentation
     cmds:
-      - cmd: cargo +stable doc --no-deps
+      - cmd: cargo +stable doc --no-deps --workspace
 
   doc-open:
     desc: Generates documentation and opens it in browser
     cmds:
-      - cmd: cargo +stable doc --no-deps --open
+      - cmd: cargo +stable doc --no-deps --open --workspace
 
   fmt:
     desc: Runs code formatter
     cmds:
-      - cmd: cargo +nightly fmt
+      - cmd: cargo +nightly fmt --workspace
 
   test:
     desc: Runs tests in debug mode
     cmds:
-      - cmd: cargo +stable test
+      - cmd: cargo +stable test --workspace

@@ -1,17 +1,16 @@
-mod ed;
 mod keys;
 
-use crate::ed::CursorType;
 use crate::keys::{read_key, Key};
 use crossterm::cursor::{MoveTo, SetCursorStyle};
 use crossterm::style::Print;
 use crossterm::terminal::{size, Clear, ClearType};
 use crossterm::{execute, queue, terminal};
-use ed::Editor;
+use dtee::{CursorType, Editor};
+use std::fs;
+use std::io;
 use std::io::{Stdout, Write};
-use std::{fs, io};
 
-fn repaint(stdout: &mut Stdout, content: &Vec<Vec<char>>) -> io::Result<()> {
+fn repaint(stdout: &mut Stdout, content: &[Vec<char>]) -> io::Result<()> {
   for (row_index, row) in content.iter().enumerate() {
     for (col_index, ch) in row.iter().enumerate() {
       let _ = queue!(stdout, MoveTo(col_index as u16, row_index as u16), Print(ch));

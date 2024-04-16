@@ -1,12 +1,18 @@
-[package]
-name = "dte"
-version = "0.0.0"
-authors = ["Dariusz Depta <dariusz.depta@dsntk.io>"]
-description = "Decision table editor"
-documentation = "https://docs.rs/dte"
+[workspace]
+
+resolver = "2"
+
+members = [
+    "editor",
+    "engine"
+]
+
+[workspace.package]
+version = "0.0.1"
+authors = ["Dariusz Depta <depta@engos.de>"]
 repository = "https://github.com/DecisionToolkit/dte.git"
 license = "MIT OR Apache-2.0"
 edition = "2021"
 
-[dependencies]
+[workspace.dependencies]
 crossterm = "0.27.0"

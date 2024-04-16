@@ -47,7 +47,7 @@ impl Cursor {
 
   pub fn adj_col(&mut self, value: isize) {
     if value < 0 {
-      self.col = self.col.saturating_sub(value.abs() as usize);
+      self.col = self.col.saturating_sub(value.unsigned_abs());
     } else {
       self.col = self.col.saturating_add(value as usize);
     }
@@ -67,7 +67,7 @@ impl Cursor {
 
   pub fn adj_row(&mut self, value: isize) {
     if value < 0 {
-      self.row = self.row.saturating_sub(value.abs() as usize);
+      self.row = self.row.saturating_sub(value.unsigned_abs());
     } else {
       self.row = self.row.saturating_add(value as usize);
     }
@@ -76,12 +76,12 @@ impl Cursor {
   pub fn adjusted(&self, row_offset: isize, col_offset: isize) -> (usize, usize) {
     (
       if row_offset < 0 {
-        self.row.saturating_sub(row_offset.abs() as usize)
+        self.row.saturating_sub(row_offset.unsigned_abs())
       } else {
         self.row.saturating_add(row_offset as usize)
       },
       if col_offset < 0 {
-        self.col.saturating_sub(col_offset.abs() as usize)
+        self.col.saturating_sub(col_offset.unsigned_abs())
       } else {
         self.col.saturating_add(col_offset as usize)
       },
@@ -93,12 +93,12 @@ impl Cursor {
   pub fn adjusted_1(&self, col_offset: isize, row_offset: isize) -> (usize, usize) {
     (
       if col_offset < 0 {
-        self.col.saturating_sub(col_offset.abs() as usize)
+        self.col.saturating_sub(col_offset.unsigned_abs())
       } else {
         self.col.saturating_add(col_offset as usize)
       },
       if row_offset < 0 {
-        self.row.saturating_sub(row_offset.abs() as usize)
+        self.row.saturating_sub(row_offset.unsigned_abs())
       } else {
         self.row.saturating_add(row_offset as usize)
       },

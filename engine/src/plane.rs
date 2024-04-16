@@ -1,6 +1,6 @@
 //! # Text editing plane
 
-use crate::ed::cursor::{Cursor, CursorType};
+use crate::cursor::{Cursor, CursorType};
 use std::cmp::min;
 use std::fmt;
 use std::fmt::Display;
@@ -180,17 +180,23 @@ impl Plane {
 
   /// Places cursor at the first character in the cell.
   pub fn cursor_move_cell_start(&mut self) -> bool {
-    if let Some(row) = self.chars.get(self.cursor.row()) {
-      if self.cursor.col() < row.len() {
-        for (offset, ch) in row[..self.cursor.col()].iter().rev().enumerate() {
-          if is_box_drawing_character!(ch) {
-            self.cursor.dec_col(offset);
-            return true;
-          }
-        }
-      }
+    let mut offset = 0;
+    while self.is_allowed_position(0, offset) {
+      offset -= 1;
     }
-    false
+    self.cursor.adj_col(offset);
+    offset < 0
+    // if let Some(row) = self.chars.get(self.cursor.row()) {
+    //   if self.cursor.col() < row.len() {
+    //     for (offset, ch) in row[..self.cursor.col()].iter().rev().enumerate() {
+    //       if is_box_drawing_character!(ch) {
+    //         self.cursor.dec_col(offset);
+    //         return true;
+    //       }
+    //     }
+    //   }
+    // }
+    // false
   }
 
   /// Places cursor at the last character in the cell (same row).

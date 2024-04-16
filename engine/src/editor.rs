@@ -1,5 +1,5 @@
-use crate::ed::cursor::CursorType;
-use crate::ed::plane::Plane;
+use crate::cursor::CursorType;
+use crate::plane::Plane;
 
 struct Viewport {
   left: usize,

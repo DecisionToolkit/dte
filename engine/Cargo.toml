@@ -1,0 +1,11 @@
+[package]
+name = "dtee"
+version = { workspace = true }
+authors = { workspace = true }
+description = "Decision table editor engine"
+documentation = "https://docs.rs/dte"
+repository = { workspace = true }
+license = { workspace = true }
+edition = { workspace = true }
+
+[dependencies]
