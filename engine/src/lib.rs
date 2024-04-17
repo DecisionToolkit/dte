@@ -8,4 +8,4 @@ mod utils;
 
 pub use controller::Controller;
 pub use region::Region;
-pub use utils::debug;
+pub use utils::debug_to_file;
