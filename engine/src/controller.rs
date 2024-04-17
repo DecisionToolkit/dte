@@ -1,63 +1,44 @@
 use crate::model::Model;
-use crate::rect::Rect;
-use std::cmp::min;
+use crate::region::Region;
 
 pub struct Controller {
-  /// Model containing edited text.
+  /// Edited textual content.
   model: Model,
-  /// Text viewport.
-  viewport: Rect,
-  /// Dirty parts of the viewport to be refreshed in view.
-  dirties: Vec<Rect>,
+  /// Visible content viewport.
+  viewport: Region,
 }
 
 impl Controller {
   pub fn new(text: String, width: usize, height: usize) -> Self {
     let model = Model::new(text);
-    let viewport = Rect::new(0, 0, width, height);
-    let (columns, rows) = model.size();
-    let dirties = vec![Rect::new(0, 0, min(width, columns), min(height, rows))];
-    Self { model, viewport, dirties }
+    let viewport = Region::new(0, 0, width, height);
+    Self { model, viewport }
   }
 
-  pub fn offset(&self) -> (usize, usize) {
-    (self.viewport.left(), self.viewport.top())
+  pub fn is_locked(&self) -> bool {
+    let (width, height) = self.viewport().size();
+    width < 30 || height < 10
   }
 
-  pub fn size(&self) -> (usize, usize) {
-    (self.viewport.width(), self.viewport.height())
+  pub fn viewport(&self) -> &Region {
+    &self.viewport
   }
 
-  pub fn invalidate(&mut self, width: usize, height: usize) {
-    self.dirties.clear();
-    self.dirties.push(Rect::new(0, 0, width, height));
-  }
-
-  pub fn is_dirty(&self) -> bool {
-    !self.dirties.is_empty()
-  }
-
-  pub fn dirties(&self) -> &[Rect] {
-    &self.dirties
-  }
-
-  pub fn resize(&mut self, width: usize, height: usize) {
-    self.dirties.clear();
-    let old_width = self.viewport.width();
-    let old_height = self.viewport.height();
-    if width > old_width {
-      self.dirties.push(Rect::new(old_width, 0, width - old_width, height));
+  pub fn resize(&mut self, width: usize, height: usize) -> Vec<Region> {
+    let mut dirty_regions = vec![];
+    if width > self.viewport.width() {
+      dirty_regions.push(Region::new(self.viewport.width(), 0, width.saturating_sub(self.viewport.width()), height));
     }
-    if height > old_height {
-      self.dirties.push(Rect::new(0, old_height, width, height - old_height));
+    if height > self.viewport.height() {
+      dirty_regions.push(Region::new(0, self.viewport.height(), width, height.saturating_sub(self.viewport.height())));
     }
     self.viewport.resize(width, height);
+    dirty_regions
   }
 
   /// Returns the cursor position in the text coordinates.
   pub fn cursor_position(&self) -> (usize, usize) {
-    let (column, row) = self.model.cursor_position();
-    (column.saturating_sub(self.viewport.left()), row.saturating_sub(self.viewport.top()))
+    self.model.cursor_position()
   }
 
   pub fn text(&self) -> &[Vec<char>] {

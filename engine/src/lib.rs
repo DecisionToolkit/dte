@@ -3,7 +3,7 @@
 mod controller;
 mod cursor;
 mod model;
-mod rect;
+mod region;
 
 pub use controller::Controller;
-pub use rect::Rect;
+pub use region::Region;
