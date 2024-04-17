@@ -30,17 +30,8 @@ impl Cursor {
     (self.column, self.row)
   }
 
-  pub fn set(&mut self, col: usize, row: usize) {
-    self.column = col;
-    self.row = row;
-  }
-
   pub fn set_col(&mut self, col: usize) {
     self.column = col;
-  }
-
-  pub fn set_row(&mut self, row: usize) {
-    self.row = row;
   }
 
   pub fn col(&self) -> usize {
@@ -55,14 +46,6 @@ impl Cursor {
     self.column = self.column.saturating_sub(value);
   }
 
-  pub fn move_col(&mut self, value: isize) {
-    if value < 0 {
-      self.column = self.column.saturating_sub(value.unsigned_abs());
-    } else {
-      self.column = self.column.saturating_add(value as usize);
-    }
-  }
-
   pub fn row(&self) -> usize {
     self.row
   }
@@ -74,29 +57,6 @@ impl Cursor {
   pub fn dec_row(&mut self, value: usize) {
     self.row = self.row.saturating_sub(value);
   }
-
-  pub fn move_row(&mut self, value: isize) {
-    if value < 0 {
-      self.row = self.row.saturating_sub(value.unsigned_abs());
-    } else {
-      self.row = self.row.saturating_add(value as usize);
-    }
-  }
-
-  // pub fn adjusted_to_remove(&self, row_offset: isize, col_offset: isize) -> (usize, usize) {
-  //   (
-  //     if row_offset < 0 {
-  //       self.row.saturating_sub(row_offset.unsigned_abs())
-  //     } else {
-  //       self.row.saturating_add(row_offset as usize)
-  //     },
-  //     if col_offset < 0 {
-  //       self.column.saturating_sub(col_offset.unsigned_abs())
-  //     } else {
-  //       self.column.saturating_add(col_offset as usize)
-  //     },
-  //   )
-  // }
 
   /// Calculates the cursor position after applying specified offsets.
   pub fn offset(&self, column_offset: isize, row_offset: isize) -> (usize, usize) {
