@@ -9,6 +9,6 @@ license = { workspace = true }
 edition = { workspace = true }
 
 [dependencies]
+clap = { workspace = true }
 crossterm = { workspace = true }
 dtee = { path = "../engine" }
-log = "0.4.21"

@@ -7,5 +7,3 @@ documentation = "https://docs.rs/dtee"
 repository = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
-
-[dependencies]
