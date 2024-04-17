@@ -15,25 +15,20 @@ impl Controller {
     Self { model, viewport }
   }
 
-  pub fn is_locked(&self) -> bool {
-    let (width, height) = self.viewport().size();
-    width < 30 || height < 10
-  }
-
   pub fn viewport(&self) -> &Region {
     &self.viewport
   }
 
   pub fn resize(&mut self, width: usize, height: usize) -> Vec<Region> {
-    let mut dirty_regions = vec![];
+    let mut dirties = vec![];
     if width > self.viewport.width() {
-      dirty_regions.push(Region::new(self.viewport.width(), 0, width.saturating_sub(self.viewport.width()), height));
+      dirties.push(Region::new(self.viewport.width(), 0, width.saturating_sub(self.viewport.width()), height));
     }
     if height > self.viewport.height() {
-      dirty_regions.push(Region::new(0, self.viewport.height(), width, height.saturating_sub(self.viewport.height())));
+      dirties.push(Region::new(0, self.viewport.height(), width, height.saturating_sub(self.viewport.height())));
     }
     self.viewport.resize(width, height);
-    dirty_regions
+    dirties
   }
 
   /// Returns the cursor position in the text coordinates.

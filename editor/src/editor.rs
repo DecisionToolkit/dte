@@ -5,6 +5,12 @@ use crossterm::{execute, queue};
 use dtee::{Controller, Region};
 use std::io::{Result, Stdout, Write};
 
+/// Minimal terminal width before locking.
+const MIN_TERMINAL_WIDTH: usize = 30;
+
+/// Minimal terminal height before locking.
+const MIN_TERMINAL_HEIGHT: usize = 10;
+
 pub struct Editor {
   stdout: Stdout,
   controller: Controller,
@@ -157,8 +163,8 @@ impl Editor {
   }
 
   fn action_resize(&mut self, width: usize, height: usize) -> Result<()> {
-    let dirty_regions = self.controller.resize(width, height);
-    if self.controller.is_locked() {
+    let dirties = self.controller.resize(width, height);
+    if width < MIN_TERMINAL_WIDTH || height < MIN_TERMINAL_HEIGHT {
       execute!(self.stdout, c_hide(), t_clear_all(), c_move(0, 0), Print("I'm squeezed!".yellow().bold()))?;
       self.locked = true;
     } else {
@@ -166,7 +172,7 @@ impl Editor {
         self.repaint(&[*self.controller.viewport()])?;
         execute!(self.stdout, c_show())?;
       } else {
-        self.repaint(&dirty_regions)?;
+        self.repaint(&dirties)?;
       }
       let (col, row) = self.controller.cursor_position();
       let (left, top) = self.controller.viewport().offset();

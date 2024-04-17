@@ -83,20 +83,20 @@ impl Cursor {
     }
   }
 
-  pub fn adjusted_to_remove(&self, row_offset: isize, col_offset: isize) -> (usize, usize) {
-    (
-      if row_offset < 0 {
-        self.row.saturating_sub(row_offset.unsigned_abs())
-      } else {
-        self.row.saturating_add(row_offset as usize)
-      },
-      if col_offset < 0 {
-        self.column.saturating_sub(col_offset.unsigned_abs())
-      } else {
-        self.column.saturating_add(col_offset as usize)
-      },
-    )
-  }
+  // pub fn adjusted_to_remove(&self, row_offset: isize, col_offset: isize) -> (usize, usize) {
+  //   (
+  //     if row_offset < 0 {
+  //       self.row.saturating_sub(row_offset.unsigned_abs())
+  //     } else {
+  //       self.row.saturating_add(row_offset as usize)
+  //     },
+  //     if col_offset < 0 {
+  //       self.column.saturating_sub(col_offset.unsigned_abs())
+  //     } else {
+  //       self.column.saturating_add(col_offset as usize)
+  //     },
+  //   )
+  // }
 
   /// Calculates the cursor position after applying specified offsets.
   pub fn offset(&self, column_offset: isize, row_offset: isize) -> (usize, usize) {

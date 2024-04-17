@@ -368,7 +368,7 @@ impl Model {
   /// Moves the cursor to new position.
   fn cursor_move(&mut self, row_offset: isize, col_offset: isize) {
     if self.is_allowed_position(row_offset, col_offset) {
-      let (row, col) = self.cursor.adjusted_to_remove(row_offset, col_offset);
+      let (col, row) = self.cursor.offset(col_offset, row_offset);
       if (1..self.text.len() - 1).contains(&row) && (1..self.text[row].len() - 1).contains(&col) {
         self.cursor.set(col, row);
       }
@@ -530,9 +530,9 @@ impl Model {
 
   /// Returns `true` when the character at the specified position is a horizontal line.
   fn is_horz_line(&self, row_offset: isize, col_offset: isize) -> bool {
-    let (r, c) = self.cursor.adjusted_to_remove(row_offset, col_offset);
-    if r < self.text.len() && c < self.text[r].len() {
-      is_horz_line_top!(self.text[r][c])
+    let (col, row) = self.cursor.offset(col_offset, row_offset);
+    if row < self.text.len() && col < self.text[row].len() {
+      is_horz_line_top!(self.text[row][col])
     } else {
       false
     }
