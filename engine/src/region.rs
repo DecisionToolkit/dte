@@ -74,6 +74,49 @@ impl Region {
   pub fn move_up(&mut self, offset: usize) {
     self.top = self.top.saturating_sub(offset);
   }
+
+  pub fn move_right(&mut self, offset: usize) {
+    self.left = self.left.saturating_add(offset);
+  }
+
+  pub fn move_left(&mut self, offset: usize) {
+    self.left = self.left.saturating_sub(offset);
+  }
+
+  pub fn adjust_left(&mut self, anchor: usize, distance: usize) -> bool {
+    let target = anchor.saturating_sub(distance);
+    if target < self.left() {
+      self.left = self.left.saturating_sub(self.left().saturating_sub(target));
+      return true;
+    }
+    false
+  }
+  pub fn adjust_right(&mut self, anchor: usize, distance: usize) -> bool {
+    let target = anchor.saturating_add(distance);
+    if target > self.right() {
+      self.left = self.left.saturating_add(target.saturating_sub(self.right()));
+      return true;
+    }
+    false
+  }
+
+  pub fn adjust_up(&mut self, anchor: usize, distance: usize) -> bool {
+    let target = anchor.saturating_sub(distance);
+    if target < self.top() {
+      self.top = self.top.saturating_sub(self.top().saturating_sub(target));
+      return true;
+    }
+    false
+  }
+
+  pub fn adjust_down(&mut self, anchor: usize, distance: usize) -> bool {
+    let target = anchor.saturating_add(distance);
+    if target > self.bottom() {
+      self.top = self.top.saturating_add(target.saturating_sub(self.bottom()));
+      return true;
+    }
+    false
+  }
 }
 
 #[cfg(test)]

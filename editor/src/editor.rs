@@ -176,7 +176,7 @@ impl Editor {
     if !regions.is_empty() {
       queue!(self.stdout, c_hide())?;
       let (offset_left, offset_top) = self.controller.viewport().offset();
-      let (text_width, _) = self.controller.content_size();
+      let text_width = self.controller.content_region().width();
       for region in regions {
         let (left, top) = region.offset();
         let (width, height) = region.size();
@@ -184,10 +184,14 @@ impl Editor {
           let mut last_column_index = 0;
           for (col_index, ch) in row.iter().skip(left).take(width).enumerate() {
             last_column_index = col_index;
-            queue!(self.stdout, c_move(left + col_index - offset_left, top + row_index - offset_top), Print(ch))?;
+            let x = left.saturating_add(col_index).saturating_sub(offset_left);
+            let y = top.saturating_add(row_index).saturating_sub(offset_top);
+            queue!(self.stdout, c_move(x, y), Print(ch))?;
           }
           for col_index in last_column_index + 1..min(width, text_width) {
-            queue!(self.stdout, c_move(left + col_index - offset_left, top + row_index - offset_top), Print(WS))?;
+            let x = left.saturating_add(col_index).saturating_sub(offset_left);
+            let y = top.saturating_add(row_index).saturating_sub(offset_top);
+            queue!(self.stdout, c_move(x, y), Print(WS))?;
           }
         }
       }
@@ -215,6 +219,6 @@ impl Editor {
   fn update_cursor_position(&mut self) -> Result<()> {
     let (col, row) = self.controller.cursor_position();
     let (left, top) = self.controller.viewport().offset();
-    execute!(self.stdout, c_move(col - left, row - top))
+    execute!(self.stdout, c_move(col.saturating_sub(left), row.saturating_sub(top)))
   }
 }

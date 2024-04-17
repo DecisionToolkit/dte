@@ -1,3 +1,4 @@
+use crate::debug;
 use crate::model::Model;
 use crate::region::Region;
 
@@ -40,29 +41,31 @@ impl Controller {
     self.model.content()
   }
 
-  pub fn content_size(&mut self) -> (usize, usize) {
-    self.model.content_size()
+  pub fn content_region(&mut self) -> Region {
+    self.model.content_region()
   }
 
-  pub fn cursor_move_right(&mut self) -> Option<bool> {
-    if self.model.cursor_move_right() {
+  pub fn cursor_move_left(&mut self) -> Option<bool> {
+    if self.model.cursor_move_left() {
       let (x, _) = self.cursor_position();
-      let distance = self.viewport.right() - x;
-      if distance < 2 {
-        let mut offset = 2 - distance;
-        if self.viewport.right() + offset == self.model.content_size().0 {
-          offset -= 1;
+      if self.viewport.left() > self.content_region().left() {
+        if self.viewport.adjust_left(x, 1) {
+          return Some(true);
         }
-        self.viewport.move_down(offset);
-        return Some(true);
       }
       return Some(false);
     }
     None
   }
 
-  pub fn cursor_move_left(&mut self) -> Option<bool> {
-    if self.model.cursor_move_left() {
+  pub fn cursor_move_right(&mut self) -> Option<bool> {
+    if self.model.cursor_move_right() {
+      let (x, _) = self.cursor_position();
+      if self.viewport.right() < self.content_region().right() {
+        if self.viewport.adjust_right(x, 1) {
+          return Some(true);
+        }
+      }
       return Some(false);
     }
     None
@@ -71,14 +74,10 @@ impl Controller {
   pub fn cursor_move_up(&mut self) -> Option<bool> {
     if self.model.cursor_move_up() {
       let (_, y) = self.cursor_position();
-      let distance = y - self.viewport.top();
-      if distance < 2 {
-        let mut offset = 2 - distance;
-        if self.viewport.top() < offset {
-          offset -= 1;
+      if self.viewport.top() > self.content_region().top() {
+        if self.viewport.adjust_up(y, 1) {
+          return Some(true);
         }
-        self.viewport.move_up(offset);
-        return Some(true);
       }
       return Some(false);
     }
@@ -88,14 +87,10 @@ impl Controller {
   pub fn cursor_move_down(&mut self) -> Option<bool> {
     if self.model.cursor_move_down() {
       let (_, y) = self.cursor_position();
-      let distance = self.viewport.bottom() - y;
-      if distance < 2 {
-        let mut offset = 2 - distance;
-        if self.viewport.bottom() + offset == self.model.content_size().1 {
-          offset -= 1;
+      if self.viewport.bottom() < self.content_region().bottom() {
+        if self.viewport.adjust_down(y, 1) {
+          return Some(true);
         }
-        self.viewport.move_down(offset);
-        return Some(true);
       }
       return Some(false);
     }

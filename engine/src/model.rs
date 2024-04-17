@@ -1,6 +1,7 @@
 //! # Text editing plane
 
 use crate::cursor::{Cursor, CursorShape};
+use crate::Region;
 use std::fmt;
 use std::fmt::Display;
 
@@ -58,7 +59,7 @@ pub(crate) struct Model {
   /// Information item height (=0 when not present).
   ii_height: usize,
   /// Calculated size of the textual content.
-  size: Option<(usize, usize)>,
+  size: Option<Region>,
 }
 
 impl Display for Model {
@@ -100,10 +101,12 @@ impl Model {
     &self.content
   }
 
-  /// Returns the maximum size of the textual content.
-  pub fn content_size(&mut self) -> (usize, usize) {
+  /// Returns content region.
+  pub fn content_region(&mut self) -> Region {
     if self.size.is_none() {
-      self.size = Some((self.content.iter().map(|row| row.len()).max().unwrap_or_default(), self.content.len()));
+      let width = self.content.iter().map(|row| row.len()).max().unwrap_or_default();
+      let height = self.content.len();
+      self.size = Some(Region::new(0, 0, width, height));
     }
     self.size.unwrap()
   }
