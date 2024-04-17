@@ -46,6 +46,16 @@ impl Controller {
 
   pub fn cursor_move_right(&mut self) -> Option<bool> {
     if self.model.cursor_move_right() {
+      let (x, _) = self.cursor_position();
+      let distance = self.viewport.right() - x;
+      if distance < 2 {
+        let mut offset = 2 - distance;
+        if self.viewport.right() + offset == self.model.content_size().0 {
+          offset -= 1;
+        }
+        self.viewport.move_down(offset);
+        return Some(true);
+      }
       return Some(false);
     }
     None

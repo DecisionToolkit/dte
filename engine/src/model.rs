@@ -52,7 +52,7 @@ enum Op {
 /// Model for edited text.
 pub(crate) struct Model {
   /// Edited text stored as rows of characters.
-  pub content: Vec<Vec<char>>,
+  content: Vec<Vec<char>>,
   /// Current cursor position and attributes.
   cursor: Cursor,
   /// Information item height (=0 when not present).
