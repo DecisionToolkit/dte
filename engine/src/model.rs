@@ -60,41 +60,32 @@ pub(crate) struct Model {
 }
 
 impl Display for Model {
-  /// Implements [Display] trait for [Model].
+  /// Implements [Display] trait for the [Model].
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    write!(
-      f,
-      "{}",
-      self
-        .text
-        .iter()
-        .fold("".to_string(), |plane, row| format!(
-          "{}\n{}",
-          plane,
-          row.iter().fold("".to_string(), |line, ch| format!("{}{}", line, ch))
-        ))
-        .trim()
-    )
+    write!(f, "{}", self.text.iter().map(|line| line.iter().collect::<String>()).collect::<Vec<String>>().join("\n"))
   }
 }
 
 impl Model {
   /// Creates a new plane with specified content.
   pub fn new(content: String) -> Self {
-    let mut rows = vec![];
-    for content_line in content.lines() {
-      let line = content_line.trim();
-      if !line.is_empty() {
-        let mut columns = vec![];
-        for ch in line.chars() {
-          columns.push(ch);
+    let text = content
+      .lines()
+      .filter_map(|line| {
+        let line = line.trim();
+        if line.is_empty() {
+          None
+        } else {
+          Some(line.to_string())
         }
-        rows.push(columns);
-      }
-    }
+      })
+      .collect::<Vec<String>>()
+      .iter()
+      .map(|line| line.chars().collect::<Vec<char>>())
+      .collect::<Vec<Vec<char>>>();
     let cursor = Cursor::new(CursorShape::Bar, 1, 1);
-    let ii_height = Self::information_item_height(&rows);
-    Self { text: rows, cursor, ii_height }
+    let ii_height = Self::information_item_height(&text);
+    Self { text, cursor, ii_height }
   }
 
   /// Returns the maximal column width and height of the text.
