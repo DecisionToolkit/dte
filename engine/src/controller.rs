@@ -1,6 +1,5 @@
 use crate::model::Model;
 use crate::region::Region;
-use crate::utils::debug;
 
 pub struct Controller {
   /// Edited textual content.
@@ -10,8 +9,8 @@ pub struct Controller {
 }
 
 impl Controller {
-  pub fn new(text: String, width: usize, height: usize) -> Self {
-    let model = Model::new(text);
+  pub fn new(content: String, width: usize, height: usize) -> Self {
+    let model = Model::new(content);
     let viewport = Region::new(0, 0, width, height);
     Self { model, viewport }
   }
@@ -32,7 +31,7 @@ impl Controller {
     dirties
   }
 
-  /// Returns the cursor position in the text coordinates.
+  /// Returns the cursor position (model coordinates).
   pub fn cursor_position(&self) -> (usize, usize) {
     self.model.cursor_position()
   }
@@ -45,16 +44,16 @@ impl Controller {
     self.model.content_size()
   }
 
-  pub fn cursor_move_right(&mut self) -> Option<(usize, usize)> {
+  pub fn cursor_move_right(&mut self) -> Option<bool> {
     if self.model.cursor_move_right() {
-      return Some(self.cursor_position());
+      return Some(false);
     }
     None
   }
 
-  pub fn cursor_move_left(&mut self) -> Option<(usize, usize)> {
+  pub fn cursor_move_left(&mut self) -> Option<bool> {
     if self.model.cursor_move_left() {
-      return Some(self.cursor_position());
+      return Some(false);
     }
     None
   }
@@ -93,44 +92,44 @@ impl Controller {
     None
   }
 
-  pub fn cursor_move_cell_start(&mut self) -> Option<(usize, usize)> {
+  pub fn cursor_move_cell_start(&mut self) -> Option<bool> {
     if self.model.cursor_move_cell_start() {
-      return Some(self.cursor_position());
+      return Some(false);
     }
     None
   }
 
-  pub fn cursor_move_cell_end(&mut self) -> Option<(usize, usize)> {
+  pub fn cursor_move_cell_end(&mut self) -> Option<bool> {
     if self.model.cursor_move_cell_end() {
-      return Some(self.cursor_position());
+      return Some(false);
     }
     None
   }
 
-  pub fn cursor_move_cell_next(&mut self) -> Option<(usize, usize)> {
+  pub fn cursor_move_cell_next(&mut self) -> Option<bool> {
     if self.model.cursor_move_cell_next() {
-      return Some(self.cursor_position());
+      return Some(false);
     }
     None
   }
 
-  pub fn cursor_move_cell_prev(&mut self) -> Option<(usize, usize)> {
+  pub fn cursor_move_cell_prev(&mut self) -> Option<bool> {
     if self.model.cursor_move_cell_prev() {
-      return Some(self.cursor_position());
+      return Some(false);
     }
     None
   }
 
-  pub fn cursor_move_row_start(&mut self) -> Option<(usize, usize)> {
+  pub fn cursor_move_row_start(&mut self) -> Option<bool> {
     if self.model.cursor_move_row_start() {
-      return Some(self.cursor_position());
+      return Some(false);
     }
     None
   }
 
-  pub fn cursor_move_row_end(&mut self) -> Option<(usize, usize)> {
+  pub fn cursor_move_row_end(&mut self) -> Option<bool> {
     if self.model.cursor_move_row_end() {
-      return Some(self.cursor_position());
+      return Some(false);
     }
     None
   }

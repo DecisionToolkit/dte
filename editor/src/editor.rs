@@ -80,79 +80,53 @@ impl Editor {
   }
 
   fn action_cursor_move_right(&mut self) -> Result<()> {
-    if let Some((col, row)) = self.controller.cursor_move_right() {
-      execute!(self.stdout, c_move(col, row))?;
-    }
-    Ok(())
+    let res = self.controller.cursor_move_right();
+    self.cursor_move(res)
   }
 
   fn action_cursor_move_left(&mut self) -> Result<()> {
-    if let Some((col, row)) = self.controller.cursor_move_left() {
-      execute!(self.stdout, c_move(col, row))?;
-    }
-    Ok(())
+    let res = self.controller.cursor_move_left();
+    self.cursor_move(res)
   }
 
   fn action_cursor_move_up(&mut self) -> Result<()> {
-    if let Some(repaint) = self.controller.cursor_move_up() {
-      if repaint {
-        self.repaint_all()?;
-      }
-      self.update_cursor_position()?;
-    }
-    Ok(())
+    let res = self.controller.cursor_move_up();
+    self.cursor_move(res)
   }
 
   fn action_cursor_move_down(&mut self) -> Result<()> {
-    if let Some(repaint) = self.controller.cursor_move_down() {
-      if repaint {
-        self.repaint_all()?;
-      }
-      self.update_cursor_position()?;
-    }
-    Ok(())
+    let res = self.controller.cursor_move_down();
+    self.cursor_move(res)
   }
 
   fn action_cursor_move_cell_start(&mut self) -> Result<()> {
-    if let Some((col, row)) = self.controller.cursor_move_cell_start() {
-      execute!(self.stdout, c_move(col, row))?;
-    }
-    Ok(())
+    let res = self.controller.cursor_move_cell_start();
+    self.cursor_move(res)
   }
 
   fn action_cursor_move_cell_end(&mut self) -> Result<()> {
-    if let Some((col, row)) = self.controller.cursor_move_cell_end() {
-      execute!(self.stdout, c_move(col, row))?;
-    }
-    Ok(())
+    let res = self.controller.cursor_move_cell_end();
+    self.cursor_move(res)
   }
 
   fn action_cursor_move_row_start(&mut self) -> Result<()> {
-    if let Some((col, row)) = self.controller.cursor_move_row_start() {
-      execute!(self.stdout, c_move(col, row))?;
-    }
-    Ok(())
+    let res = self.controller.cursor_move_row_start();
+    self.cursor_move(res)
   }
 
   fn action_cursor_move_row_end(&mut self) -> Result<()> {
-    if let Some((col, row)) = self.controller.cursor_move_row_end() {
-      execute!(self.stdout, c_move(col, row))?;
-    }
-    Ok(())
+    let res = self.controller.cursor_move_row_end();
+    self.cursor_move(res)
   }
 
   fn action_cursor_move_cell_next(&mut self) -> Result<()> {
-    if let Some((col, row)) = self.controller.cursor_move_cell_next() {
-      execute!(self.stdout, c_move(col, row))?;
-    }
-    Ok(())
+    let res = self.controller.cursor_move_cell_next();
+    self.cursor_move(res)
   }
 
   fn action_cursor_move_cell_prev(&mut self) -> Result<()> {
-    if let Some((col, row)) = self.controller.cursor_move_cell_prev() {
-      execute!(self.stdout, c_move(col, row))?;
-    }
-    Ok(())
+    let res = self.controller.cursor_move_cell_prev();
+    self.cursor_move(res)
   }
 
   fn action_cursor_toggle_bar_block(&mut self) -> Result<()> {
@@ -226,6 +200,16 @@ impl Editor {
   /// Repaints whole viewport.
   fn repaint_all(&mut self) -> Result<()> {
     self.repaint(&[*self.controller.viewport()])
+  }
+
+  fn cursor_move(&mut self, repaint: Option<bool>) -> Result<()> {
+    if let Some(repaint) = repaint {
+      if repaint {
+        self.repaint_all()?;
+      }
+      self.update_cursor_position()?;
+    }
+    Ok(())
   }
 
   fn update_cursor_position(&mut self) -> Result<()> {
