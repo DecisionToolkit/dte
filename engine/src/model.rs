@@ -311,7 +311,7 @@ impl Model {
       } else {
         self.insert_column_before_vert_line(pos);
       }
-      self.cursor_move(0, 1);
+      self.cursor_move(1, 0);
       self.update_joins();
     }
   }
@@ -325,7 +325,7 @@ impl Model {
       if self.is_whitespace_column_before_vert_line(pos, Op::Delete) {
         self.delete_column_before_vert_line(pos);
       }
-      self.cursor_move(0, -1);
+      self.cursor_move(-1, 0);
       self.update_joins();
     }
   }
@@ -339,7 +339,7 @@ impl Model {
       self.delete_column_before_vert_line(pos);
     }
     if is_frame!(self.text[self.cursor.row()][self.cursor.col()]) {
-      self.cursor_move(0, -1);
+      self.cursor_move(-1, 0);
     }
     self.update_joins();
   }
@@ -366,7 +366,7 @@ impl Model {
   }
 
   /// Moves the cursor to new position.
-  fn cursor_move(&mut self, row_offset: isize, col_offset: isize) {
+  fn cursor_move(&mut self, col_offset: isize, row_offset: isize) {
     if self.is_allowed_position(row_offset, col_offset) {
       let (col, row) = self.cursor.offset(col_offset, row_offset);
       if (1..self.text.len() - 1).contains(&row) && (1..self.text[row].len() - 1).contains(&col) {
