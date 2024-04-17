@@ -57,6 +57,7 @@ version = "0.0.1"
 dependencies = [
  "crossterm",
  "dtee",
+ "log",
 ]
 
 [[package]]

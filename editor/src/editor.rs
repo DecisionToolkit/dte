@@ -3,6 +3,7 @@ use crate::utils::*;
 use crossterm::style::{Print, Stylize};
 use crossterm::{execute, queue};
 use dtee::{Controller, Region};
+use std::cmp::min;
 use std::io::{Result, Stdout, Write};
 
 /// Minimal terminal width before locking.
@@ -10,6 +11,9 @@ const MIN_TERMINAL_WIDTH: usize = 30;
 
 /// Minimal terminal height before locking.
 const MIN_TERMINAL_HEIGHT: usize = 10;
+
+/// Whitespace character used for filling regions.
+const WS: char = ' ';
 
 pub struct Editor {
   stdout: Stdout,
@@ -90,15 +94,21 @@ impl Editor {
   }
 
   fn action_cursor_move_up(&mut self) -> Result<()> {
-    if let Some((col, row)) = self.controller.cursor_move_up() {
-      execute!(self.stdout, c_move(col, row))?;
+    if let Some(repaint) = self.controller.cursor_move_up() {
+      if repaint {
+        self.repaint_all()?;
+      }
+      self.update_cursor_position()?;
     }
     Ok(())
   }
 
   fn action_cursor_move_down(&mut self) -> Result<()> {
-    if let Some((col, row)) = self.controller.cursor_move_down() {
-      execute!(self.stdout, c_move(col, row))?;
+    if let Some(repaint) = self.controller.cursor_move_down() {
+      if repaint {
+        self.repaint_all()?;
+      }
+      self.update_cursor_position()?;
     }
     Ok(())
   }
@@ -169,7 +179,7 @@ impl Editor {
       self.locked = true;
     } else {
       if self.locked {
-        self.repaint(&[*self.controller.viewport()])?;
+        self.repaint_all()?;
         execute!(self.stdout, c_show())?;
       } else {
         self.repaint(&dirties)?;
@@ -190,18 +200,37 @@ impl Editor {
   /// Repaints specified regions.
   fn repaint(&mut self, regions: &[Region]) -> Result<()> {
     if !regions.is_empty() {
+      queue!(self.stdout, c_hide())?;
       let (offset_left, offset_top) = self.controller.viewport().offset();
+      let (text_width, _) = self.controller.content_size();
       for region in regions {
-        let top = region.top().saturating_sub(offset_left);
-        let left = region.left().saturating_sub(offset_top);
-        for (ri, row) in self.controller.text().iter().skip(top).take(region.height()).enumerate() {
-          for (ci, ch) in row.iter().skip(left).take(region.width()).enumerate() {
-            let _ = queue!(self.stdout, c_move(left.saturating_add(ci), top.saturating_add(ri)), Print(ch));
+        let (left, top) = region.offset();
+        let (width, height) = region.size();
+        for (row_index, row) in self.controller.content().iter().skip(top).take(height).enumerate() {
+          let mut last_column_index = 0;
+          for (col_index, ch) in row.iter().skip(left).take(width).enumerate() {
+            last_column_index = col_index;
+            queue!(self.stdout, c_move(left + col_index - offset_left, top + row_index - offset_top), Print(ch))?;
+          }
+          for col_index in last_column_index + 1..min(width, text_width) {
+            queue!(self.stdout, c_move(left + col_index - offset_left, top + row_index - offset_top), Print(WS))?;
           }
         }
       }
+      queue!(self.stdout, c_show())?;
       self.stdout.flush()?;
     }
     Ok(())
+  }
+
+  /// Repaints whole viewport.
+  fn repaint_all(&mut self) -> Result<()> {
+    self.repaint(&[*self.controller.viewport()])
+  }
+
+  fn update_cursor_position(&mut self) -> Result<()> {
+    let (col, row) = self.controller.cursor_position();
+    let (left, top) = self.controller.viewport().offset();
+    execute!(self.stdout, c_move(col - left, row - top))
   }
 }

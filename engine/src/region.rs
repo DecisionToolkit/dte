@@ -66,6 +66,14 @@ impl Region {
     let height = bottom.saturating_sub(top).saturating_add(1);
     Region { left, top, width, height }
   }
+
+  pub fn move_down(&mut self, offset: usize) {
+    self.top = self.top.saturating_add(offset);
+  }
+
+  pub fn move_up(&mut self, offset: usize) {
+    self.top = self.top.saturating_sub(offset);
+  }
 }
 
 #[cfg(test)]

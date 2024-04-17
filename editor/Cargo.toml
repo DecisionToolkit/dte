@@ -11,3 +11,4 @@ edition = { workspace = true }
 [dependencies]
 crossterm = { workspace = true }
 dtee = { path = "../engine" }
+log = "0.4.21"

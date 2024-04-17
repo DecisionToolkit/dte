@@ -1,5 +1,6 @@
 use crate::model::Model;
 use crate::region::Region;
+use crate::utils::debug;
 
 pub struct Controller {
   /// Edited textual content.
@@ -36,8 +37,12 @@ impl Controller {
     self.model.cursor_position()
   }
 
-  pub fn text(&self) -> &[Vec<char>] {
-    self.model.text()
+  pub fn content(&self) -> &[Vec<char>] {
+    self.model.content()
+  }
+
+  pub fn content_size(&mut self) -> (usize, usize) {
+    self.model.content_size()
   }
 
   pub fn cursor_move_right(&mut self) -> Option<(usize, usize)> {
@@ -54,16 +59,36 @@ impl Controller {
     None
   }
 
-  pub fn cursor_move_up(&mut self) -> Option<(usize, usize)> {
+  pub fn cursor_move_up(&mut self) -> Option<bool> {
     if self.model.cursor_move_up() {
-      return Some(self.cursor_position());
+      let (_, y) = self.cursor_position();
+      let distance = y - self.viewport.top();
+      if distance < 2 {
+        let mut offset = 2 - distance;
+        if self.viewport.top() < offset {
+          offset -= 1;
+        }
+        self.viewport.move_up(offset);
+        return Some(true);
+      }
+      return Some(false);
     }
     None
   }
 
-  pub fn cursor_move_down(&mut self) -> Option<(usize, usize)> {
+  pub fn cursor_move_down(&mut self) -> Option<bool> {
     if self.model.cursor_move_down() {
-      return Some(self.cursor_position());
+      let (_, y) = self.cursor_position();
+      let distance = self.viewport.bottom() - y;
+      if distance < 2 {
+        let mut offset = 2 - distance;
+        if self.viewport.bottom() + offset == self.model.content.len() {
+          offset -= 1;
+        }
+        self.viewport.move_down(offset);
+        return Some(true);
+      }
+      return Some(false);
     }
     None
   }
