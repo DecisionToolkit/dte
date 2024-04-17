@@ -91,7 +91,7 @@ impl Controller {
       let distance = self.viewport.bottom() - y;
       if distance < 2 {
         let mut offset = 2 - distance;
-        if self.viewport.bottom() + offset == self.model.content.len() {
+        if self.viewport.bottom() + offset == self.model.content_size().1 {
           offset -= 1;
         }
         self.viewport.move_down(offset);
