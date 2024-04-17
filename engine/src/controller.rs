@@ -1,6 +1,7 @@
-use crate::debug;
 use crate::model::Model;
 use crate::region::Region;
+
+const DISTANCE: usize = 1;
 
 pub struct Controller {
   /// Edited textual content.
@@ -49,7 +50,7 @@ impl Controller {
     if self.model.cursor_move_left() {
       let (x, _) = self.cursor_position();
       if self.viewport.left() > self.content_region().left() {
-        if self.viewport.adjust_left(x, 1) {
+        if self.viewport.move_left(x, DISTANCE) {
           return Some(true);
         }
       }
@@ -62,7 +63,7 @@ impl Controller {
     if self.model.cursor_move_right() {
       let (x, _) = self.cursor_position();
       if self.viewport.right() < self.content_region().right() {
-        if self.viewport.adjust_right(x, 1) {
+        if self.viewport.move_right(x, DISTANCE) {
           return Some(true);
         }
       }
@@ -75,7 +76,7 @@ impl Controller {
     if self.model.cursor_move_up() {
       let (_, y) = self.cursor_position();
       if self.viewport.top() > self.content_region().top() {
-        if self.viewport.adjust_up(y, 1) {
+        if self.viewport.move_up(y, DISTANCE) {
           return Some(true);
         }
       }
@@ -88,7 +89,7 @@ impl Controller {
     if self.model.cursor_move_down() {
       let (_, y) = self.cursor_position();
       if self.viewport.bottom() < self.content_region().bottom() {
-        if self.viewport.adjust_down(y, 1) {
+        if self.viewport.move_down(y, DISTANCE) {
           return Some(true);
         }
       }
