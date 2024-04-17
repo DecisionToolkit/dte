@@ -1,8 +1,6 @@
 use crate::model::Model;
 use crate::region::Region;
 
-const DISTANCE: usize = 1;
-
 pub struct Controller {
   /// Edited textual content.
   model: Model,
@@ -48,94 +46,70 @@ impl Controller {
 
   pub fn cursor_move_left(&mut self) -> Option<bool> {
     if self.model.cursor_move_left() {
-      let (x, _) = self.cursor_position();
-      if self.viewport.left() > self.content_region().left() {
-        if self.viewport.move_left(x, DISTANCE) {
-          return Some(true);
-        }
-      }
-      return Some(false);
+      return self.cursor_moved_left();
     }
     None
   }
 
   pub fn cursor_move_right(&mut self) -> Option<bool> {
     if self.model.cursor_move_right() {
-      let (x, _) = self.cursor_position();
-      if self.viewport.right() < self.content_region().right() {
-        if self.viewport.move_right(x, DISTANCE) {
-          return Some(true);
-        }
-      }
-      return Some(false);
+      return self.cursor_moved_right();
     }
     None
   }
 
   pub fn cursor_move_up(&mut self) -> Option<bool> {
     if self.model.cursor_move_up() {
-      let (_, y) = self.cursor_position();
-      if self.viewport.top() > self.content_region().top() {
-        if self.viewport.move_up(y, DISTANCE) {
-          return Some(true);
-        }
-      }
-      return Some(false);
+      return self.cursor_moved_up();
     }
     None
   }
 
   pub fn cursor_move_down(&mut self) -> Option<bool> {
     if self.model.cursor_move_down() {
-      let (_, y) = self.cursor_position();
-      if self.viewport.bottom() < self.content_region().bottom() {
-        if self.viewport.move_down(y, DISTANCE) {
-          return Some(true);
-        }
-      }
-      return Some(false);
+      return self.cursor_moved_down();
     }
     None
   }
 
   pub fn cursor_move_cell_start(&mut self) -> Option<bool> {
     if self.model.cursor_move_cell_start() {
-      return Some(false);
+      return self.cursor_moved_left();
     }
     None
   }
 
   pub fn cursor_move_cell_end(&mut self) -> Option<bool> {
     if self.model.cursor_move_cell_end() {
-      return Some(false);
+      return self.cursor_moved_right();
     }
     None
   }
 
   pub fn cursor_move_cell_next(&mut self) -> Option<bool> {
     if self.model.cursor_move_cell_next() {
-      return Some(false);
+      return self.cursor_moved_right();
     }
     None
   }
 
   pub fn cursor_move_cell_prev(&mut self) -> Option<bool> {
     if self.model.cursor_move_cell_prev() {
-      return Some(false);
+      return self.cursor_moved_left();
     }
     None
   }
 
   pub fn cursor_move_row_start(&mut self) -> Option<bool> {
     if self.model.cursor_move_row_start() {
-      return Some(false);
+      return self.cursor_moved_left();
     }
     None
   }
 
   pub fn cursor_move_row_end(&mut self) -> Option<bool> {
     if self.model.cursor_move_row_end() {
-      return Some(false);
+      return self.cursor_moved_right();
     }
     None
   }
@@ -163,5 +137,41 @@ impl Controller {
   /// Returns the character pointed by cursor.
   pub fn cursor_char(&self) -> Option<char> {
     self.model.cursor_char()
+  }
+
+  fn cursor_moved_left(&mut self) -> Option<bool> {
+    let (x, _) = self.cursor_position();
+    let minimum = self.content_region().left();
+    if self.viewport.move_left(x, minimum) {
+      return Some(true);
+    }
+    Some(false)
+  }
+
+  fn cursor_moved_right(&mut self) -> Option<bool> {
+    let (x, _) = self.cursor_position();
+    let maximum = self.content_region().right();
+    if self.viewport.move_right(x, maximum) {
+      return Some(true);
+    }
+    Some(false)
+  }
+
+  fn cursor_moved_up(&mut self) -> Option<bool> {
+    let (_, y) = self.cursor_position();
+    let minimum = self.content_region().top();
+    if self.viewport.move_up(y, minimum) {
+      return Some(true);
+    }
+    Some(false)
+  }
+
+  fn cursor_moved_down(&mut self) -> Option<bool> {
+    let (_, y) = self.cursor_position();
+    let maximum = self.content_region().bottom();
+    if self.viewport.move_down(y, maximum) {
+      return Some(true);
+    }
+    Some(false)
   }
 }

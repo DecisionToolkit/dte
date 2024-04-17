@@ -1,5 +1,8 @@
+use std::cmp::{max, min};
 use std::fmt;
 use std::fmt::Display;
+
+const MOVE_MARGIN: usize = 1;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct Region {
@@ -67,16 +70,16 @@ impl Region {
     Region { left, top, width, height }
   }
 
-  pub fn move_left(&mut self, anchor: usize, distance: usize) -> bool {
-    let target = anchor.saturating_sub(distance);
+  pub fn move_left(&mut self, anchor: usize, minimum: usize) -> bool {
+    let target = max(anchor.saturating_sub(MOVE_MARGIN), minimum);
     if target < self.left() {
       self.left = self.left.saturating_sub(self.left().saturating_sub(target));
       return true;
     }
     false
   }
-  pub fn move_right(&mut self, anchor: usize, distance: usize) -> bool {
-    let target = anchor.saturating_add(distance);
+  pub fn move_right(&mut self, anchor: usize, maximum: usize) -> bool {
+    let target = min(anchor.saturating_add(MOVE_MARGIN), maximum);
     if target > self.right() {
       self.left = self.left.saturating_add(target.saturating_sub(self.right()));
       return true;
@@ -84,8 +87,8 @@ impl Region {
     false
   }
 
-  pub fn move_up(&mut self, anchor: usize, distance: usize) -> bool {
-    let target = anchor.saturating_sub(distance);
+  pub fn move_up(&mut self, anchor: usize, minimum: usize) -> bool {
+    let target = max(anchor.saturating_sub(MOVE_MARGIN), minimum);
     if target < self.top() {
       self.top = self.top.saturating_sub(self.top().saturating_sub(target));
       return true;
@@ -93,8 +96,8 @@ impl Region {
     false
   }
 
-  pub fn move_down(&mut self, anchor: usize, distance: usize) -> bool {
-    let target = anchor.saturating_add(distance);
+  pub fn move_down(&mut self, anchor: usize, maximum: usize) -> bool {
+    let target = min(anchor.saturating_add(MOVE_MARGIN), maximum);
     if target > self.bottom() {
       self.top = self.top.saturating_add(target.saturating_sub(self.bottom()));
       return true;
