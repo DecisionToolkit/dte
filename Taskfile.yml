@@ -53,6 +53,16 @@ tasks:
     cmds:
       - cmd: cargo +nightly fmt
 
+  run1:
+    desc: Runs the editor with example input file ./examples/e1.dtb
+    cmds:
+      - cmd: cargo run -- ./examples/e1.dtb
+
+  run2:
+    desc: Runs the editor with example input file ./examples/e2.dtb
+    cmds:
+      - cmd: cargo run -- ./examples/e2.dtb
+
   test:
     desc: Runs all tests in debug mode
     cmds:
