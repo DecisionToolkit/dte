@@ -5,36 +5,37 @@ silent: true
 tasks:
 
   build:
-    desc: Builds in debug mode
+    desc: Builds the workspace in debug mode
     cmds:
       - cmd: cargo +stable build --workspace
 
   clean:
-    desc: Cleans all targets
+    desc: Cleans all compilation artifacts
     cmds:
       - cmd: cargo clean
 
   clippy:
-    desc: Runs clippy for all targets
+    desc: Runs clippy for the workspace and all targets
     cmds:
+      - cmd: cargo +stable clippy --workspace --all-targets
       - cmd: cargo +nightly clippy --workspace --all-targets
 
   doc:
-    desc: Generates documentation
+    desc: Generates the documentation for the workspace
     cmds:
-      - cmd: cargo +stable doc --no-deps --workspace
+      - cmd: cargo +stable doc --no-deps --document-private-items --workspace
 
   doc-open:
     desc: Generates documentation and opens it in browser
     cmds:
-      - cmd: cargo +stable doc --no-deps --open --workspace
+      - cmd: cargo +stable doc --no-deps --document-private-items --open --workspace
 
   fmt:
-    desc: Runs code formatter
+    desc: Runs the code formatter
     cmds:
       - cmd: cargo +nightly fmt
 
   test:
-    desc: Runs tests in debug mode
+    desc: Runs all tests in debug mode
     cmds:
       - cmd: cargo +stable test --workspace
