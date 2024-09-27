@@ -3,6 +3,14 @@ version: '3'
 silent: true
 
 tasks:
+  all:
+    desc: Performs all tasks from the building process
+    cmds:
+      - task: clean
+      - task: fmt
+      - task: build
+      - task: clippy-stable
+      - task: test
 
   build:
     desc: Builds the workspace in debug mode
@@ -17,7 +25,17 @@ tasks:
   clippy:
     desc: Runs clippy for the workspace and all targets
     cmds:
+      - task: clippy-stable
+      - task: clippy-nightly
+
+  clippy-stable:
+    desc: Runs clippy for the workspace and all targets using stable channel
+    cmds:
       - cmd: cargo +stable clippy --workspace --all-targets
+
+  clippy-nightly:
+    desc: Runs clippy for the workspace and all targets using nightly channel
+    cmds:
       - cmd: cargo +nightly clippy --workspace --all-targets
 
   doc:
@@ -28,7 +46,7 @@ tasks:
   doc-open:
     desc: Generates documentation and opens it in browser
     cmds:
-      - cmd: cargo +stable doc --no-deps --document-private-items --open --workspace
+      - cmd: cargo +stable doc --no-deps --document-private-items --workspace --open
 
   fmt:
     desc: Runs the code formatter

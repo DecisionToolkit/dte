@@ -15,5 +15,5 @@ license = "MIT OR Apache-2.0"
 edition = "2021"
 
 [workspace.dependencies]
-clap = { version = "4.5.17", features = ["cargo"] }
+clap = { version = "4.5.18", features = ["cargo"] }
 crossterm = "0.28.1"
