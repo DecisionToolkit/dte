@@ -12,4 +12,4 @@ mod utils;
 
 pub use controller::Controller;
 pub use region::Region;
-pub use utils::debug_to_file;
+pub use utils::{debug_to_file, DEBUG_FILE_NAME};

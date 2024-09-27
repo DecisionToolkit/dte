@@ -38,6 +38,11 @@ tasks:
     cmds:
       - cmd: cargo +nightly clippy --workspace --all-targets
 
+  cov:
+    desc: Generates code coverage report
+    cmds:
+      - cmd: ./tarpaulage.sh
+
   doc:
     desc: Generates the documentation for the workspace
     cmds:
