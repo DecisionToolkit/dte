@@ -1,3 +1,5 @@
+//! # Controller
+
 use crate::model::Model;
 use crate::region::Region;
 
@@ -19,19 +21,19 @@ impl Controller {
     &self.viewport
   }
 
-  pub fn resize(&mut self, width: usize, height: usize) -> Vec<Region> {
+  pub fn resize(&mut self, new_width: usize, new_height: usize) -> Vec<Region> {
     let mut dirties = vec![];
-    if width > self.viewport.width() {
-      dirties.push(Region::new(self.viewport.width(), 0, width.saturating_sub(self.viewport.width()), height));
+    if new_width > self.viewport.width() {
+      dirties.push(Region::new(self.viewport.width(), 0, new_width.saturating_sub(self.viewport.width()), new_height));
     }
-    if height > self.viewport.height() {
-      dirties.push(Region::new(0, self.viewport.height(), width, height.saturating_sub(self.viewport.height())));
+    if new_height > self.viewport.height() {
+      dirties.push(Region::new(0, self.viewport.height(), new_width, new_height.saturating_sub(self.viewport.height())));
     }
-    self.viewport.resize(width, height);
+    self.viewport.resize(new_width, new_height);
     dirties
   }
 
-  /// Returns the cursor position (model coordinates).
+  /// Returns the cursor position in model coordinates.
   pub fn cursor_position(&self) -> (usize, usize) {
     self.model.cursor_position()
   }

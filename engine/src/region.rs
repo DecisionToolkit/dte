@@ -1,24 +1,43 @@
+//! # Region
+//!
+//! Region represents a rectangular space for handling editing operations.
+
 use std::cmp::{max, min};
 use std::fmt;
 use std::fmt::Display;
 
 const MOVE_MARGIN: usize = 1;
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Default, Copy, Clone, Eq, PartialEq)]
 pub struct Region {
+  /// Left coordinate of the region.
   left: usize,
+  /// Top coordinate of the region.
   top: usize,
+  /// Width of the region.
   width: usize,
+  /// Height of the region.
   height: usize,
 }
 
 impl Display for Region {
+  /// Implements [Display] trait for [Region].
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     write!(f, "({}, {}, {}, {})", self.left, self.top, self.width, self.height)
   }
 }
 
 impl Region {
+  /// Creates a new region with specified coordinates.
+  ///
+  /// # Examples
+  ///
+  /// ```
+  /// use dtee::Region;
+  ///
+  /// let region = Region::new(10, 11, 80, 60);
+  /// assert_eq!("(10, 11, 80, 60)", region.to_string());
+  /// ```
   pub fn new(left: usize, top: usize, width: usize, height: usize) -> Self {
     Self { left, top, width, height }
   }
@@ -111,6 +130,12 @@ mod tests {
   use super::*;
 
   #[test]
+  fn default_should_work() {
+    let region = Region::default();
+    assert_eq!("(0, 0, 0, 0)", region.to_string());
+  }
+
+  #[test]
   fn debug_should_work() {
     let region = Region::new(10, 20, 100, 200);
     assert_eq!("Region { left: 10, top: 20, width: 100, height: 200 }", format!("{:?}", region));
@@ -119,7 +144,7 @@ mod tests {
   #[test]
   fn display_should_work() {
     let region = Region::new(10, 20, 100, 200);
-    assert_eq!("(10, 20, 100, 200)", format!("{}", region));
+    assert_eq!("(10, 20, 100, 200)", region.to_string());
   }
 
   #[test]

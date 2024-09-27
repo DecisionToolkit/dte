@@ -1,4 +1,4 @@
-//! # Text editing plane
+//! # Data model
 
 use crate::cursor::{Cursor, CursorShape};
 use crate::Region;
@@ -15,14 +15,15 @@ macro_rules! is_frame {
   };
 }
 
-/// Checks whether the specified character is a vertical line seen from the left side.
+/// Checks whether the specified character is a vertical line
+/// seen from the left side of the character.
 macro_rules! is_vert_line_left {
   ($ch:expr) => {
     matches!($ch, '│' | '├' | '║' | '╟')
   };
 }
 
-/// Model for edited text.
+/// Data model for editing text.
 pub(crate) struct Model {
   /// Edited text stored as rows of characters.
   content: Vec<Vec<char>>,
@@ -40,7 +41,7 @@ impl Display for Model {
 }
 
 impl Model {
-  /// Creates a new plane with specified content.
+  /// Creates a new text plane populated with specified content.
   pub fn new(content: String) -> Self {
     let content = content
       .lines()
@@ -60,7 +61,7 @@ impl Model {
     Self { content, cursor, size: None }
   }
 
-  /// Returns the textual content.
+  /// Returns a reference to the content of the text plane.
   pub fn content(&self) -> &[Vec<char>] {
     &self.content
   }
@@ -75,12 +76,12 @@ impl Model {
     self.size.unwrap()
   }
 
-  /// Returns the position of the cursor in plane's coordinates.
+  /// Returns the position of the cursor in text plane's coordinates.
   pub fn cursor_position(&self) -> (usize, usize) {
     self.cursor.get()
   }
 
-  /// Returns the character pointed by cursor.
+  /// Returns the character pointed by the cursor.
   pub fn cursor_char(&self) -> Option<char> {
     let (col, row) = self.cursor.get();
     if let Some(row) = self.content.get(row) {
@@ -91,7 +92,7 @@ impl Model {
     None
   }
 
-  /// Moves cursor up in the same column.
+  /// Moves the cursor up in the same column.
   pub fn cursor_move_up(&mut self) -> bool {
     if self.is_allowed_position(-1, 0) {
       self.cursor.dec_row(1);
@@ -104,7 +105,7 @@ impl Model {
     false
   }
 
-  /// Moves cursor down in the same column.
+  /// Moves the cursor down in the same column.
   pub fn cursor_move_down(&mut self) -> bool {
     if self.is_allowed_position(1, 0) {
       self.cursor.inc_row(1);
@@ -117,7 +118,7 @@ impl Model {
     false
   }
 
-  /// Moves cursor to the left in the same row.
+  /// Moves the cursor to the left in the same row.
   pub fn cursor_move_left(&mut self) -> bool {
     if self.is_allowed_position(0, -1) {
       self.cursor.dec_col(1);
@@ -130,7 +131,7 @@ impl Model {
     false
   }
 
-  /// Moves cursor to the right in the same row.
+  /// Moves the cursor to the right in the same row.
   pub fn cursor_move_right(&mut self) -> bool {
     if self.is_allowed_position(0, 1) {
       self.cursor.inc_col(1);
@@ -158,7 +159,7 @@ impl Model {
     false
   }
 
-  /// Places cursor at the last character of the cell in the same row.
+  /// Places the cursor at the last character of the cell in the same row.
   pub fn cursor_move_cell_end(&mut self) -> bool {
     if let Some(row) = self.row() {
       if let Some(chars) = self.after(row) {
@@ -173,7 +174,7 @@ impl Model {
     false
   }
 
-  /// Places cursor at the first character of the first cell in the same row.
+  /// Places the cursor at the first character of the first cell in the same row.
   pub fn cursor_move_row_start(&mut self) -> bool {
     if let Some(row) = self.row() {
       for (pos, ch) in row.iter().enumerate() {
@@ -186,7 +187,7 @@ impl Model {
     false
   }
 
-  /// Places cursor at the last character of the last cell in the same row.
+  /// Places the cursor at the last character of the last cell in the same row.
   pub fn cursor_move_row_end(&mut self) -> bool {
     if let Some(row) = self.row() {
       let len = row.len();
@@ -203,7 +204,7 @@ impl Model {
     false
   }
 
-  /// Places ths cursor at the first character of the next cell in the same row.
+  /// Places the cursor at the first character of the next cell in the same row.
   pub fn cursor_move_cell_next(&mut self) -> bool {
     if self.cursor_move_cell_end() {
       if let Some(row) = self.row() {
@@ -263,7 +264,7 @@ impl Model {
     None
   }
 
-  /// Returns `true` when the cursor position is allowed according to horizontal and vertical offset.
+  /// Returns `true` when the cursor position is allowed, according to horizontal and vertical offset.
   fn is_allowed_position(&self, row_offset: isize, col_offset: isize) -> bool {
     let (col, row) = self.cursor.offset(col_offset, row_offset);
     if row > 0 && row < self.content.len() - 1 && col > 0 && col < self.content[row].len() {

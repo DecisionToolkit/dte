@@ -1,16 +1,23 @@
+//! # Utilities
+
+use std::fmt::Display;
 use std::fs::OpenOptions;
-use std::io::Write;
+use std::io::{Result, Write};
 
-const FILE_NAME: &str = "./target/output.txt";
+/// Name of the output file for storing debug messages.
+const DEBUG_FILE_NAME: &str = "../target/debug.txt";
 
-pub fn debug_to_file(message: impl ToString) {
-  let mut file = OpenOptions::new()
-    .create(true)
-    .append(true)
-    .open(FILE_NAME)
-    .unwrap_or_else(|_| panic!("failed to open debug file: {}", FILE_NAME));
-  let _ = file
-    .write(format!("{}\n", message.to_string()).as_bytes())
-    .unwrap_or_else(|_| panic!("failed to write debug message: {}", FILE_NAME));
-  file.flush().unwrap_or_else(|_| panic!("failed to flush debug file: {}", FILE_NAME));
+/// Writes a debug message to debug file.
+///
+/// # Example
+///
+/// ```
+/// use dtee::debug_to_file;
+///
+/// debug_to_file("Cursor reached the end of the decision table.").unwrap();
+/// ```
+pub fn debug_to_file<T: Display>(message: T) -> Result<()> {
+  let mut file = OpenOptions::new().create(true).append(true).open(DEBUG_FILE_NAME)?;
+  file.write_all(format!("{}\n", message).as_bytes())?;
+  file.flush()
 }

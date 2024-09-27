@@ -1,3 +1,5 @@
+//! # Editor
+
 use crate::keys::{read_key, Key};
 use crate::utils::*;
 use crossterm::style::{Print, Stylize};
@@ -6,13 +8,13 @@ use dtee::{Controller, Region};
 use std::cmp::min;
 use std::io::{Result, Stdout, Write};
 
-/// Minimal terminal width before locking.
+/// Minimal terminal width before locking the screen.
 const MIN_TERMINAL_WIDTH: usize = 30;
 
-/// Minimal terminal height before locking.
+/// Minimal terminal height before locking the screen.
 const MIN_TERMINAL_HEIGHT: usize = 10;
 
-/// Whitespace character used for filling regions.
+/// Whitespace character used for filling empty regions.
 const WS: char = ' ';
 
 pub struct Editor {
@@ -167,7 +169,7 @@ impl Editor {
   }
 
   fn action_write(&mut self, _ch: char) -> Result<()> {
-    //TODO implement editing action
+    //TODO Implement the editing action.
     Ok(())
   }
 
@@ -201,7 +203,7 @@ impl Editor {
     Ok(())
   }
 
-  /// Repaints whole viewport.
+  /// Repaints the whole viewport.
   fn repaint_all(&mut self) -> Result<()> {
     self.repaint(&[*self.controller.viewport()])
   }

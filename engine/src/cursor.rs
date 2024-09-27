@@ -1,17 +1,17 @@
 //! # Cursor
 
-/// Cursor types (shapes).
+/// Cursor shapes.
 #[derive(Copy, Clone, Eq, PartialEq, Hash)]
 pub enum CursorShape {
-  /// Cursor is represented as vertical bar, similar to `│`.
+  /// Cursor is represented as a vertical bar, similar to `│`.
   Bar,
-  /// Cursor is represented as block, similar to `█`.
+  /// Cursor is represented as a block, similar to `█`.
   Block,
-  /// Cursor is represented as underscore, similar to `_`.
+  /// Cursor is represented as an underscore, similar to `_`.
   UnderScore,
 }
 
-/// Cursor properties.
+/// Cursor properties and position.
 pub struct Cursor {
   /// Cursor shape.
   shape: CursorShape,
@@ -74,17 +74,17 @@ impl Cursor {
     )
   }
 
-  /// Returns `true` when the current cursor shape is bar (`│`).
+  /// Returns `true` when the current cursor shape is a bar (`│`).
   pub fn is_bar(&self) -> bool {
     matches!(self.shape, CursorShape::Bar)
   }
 
-  /// Returns `true` when the current cursor shape is block (`█`).
+  /// Returns `true` when the current cursor shape is a block (`█`).
   pub fn is_block(&self) -> bool {
     matches!(self.shape, CursorShape::Block)
   }
 
-  /// Returns `true` when the current cursor shape is underscore (`_`).
+  /// Returns `true` when the current cursor shape is an underscore (`_`).
   pub fn is_underscore(&self) -> bool {
     matches!(self.shape, CursorShape::UnderScore)
   }
