@@ -40,6 +40,8 @@ or
 $ task run2
 ```
 
+🔥 To stop editing press: `ctrl+q`
+
 ## License
 
 Licensed under either of
