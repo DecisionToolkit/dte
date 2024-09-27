@@ -21,6 +21,7 @@ fn test_controller_new() {
     │ 4 │      >=2        │    >=500      ║  2  │
     └───┴─────────────────┴───────────────╨─────┘
   "#;
-  let controller = Controller::new(T0001.to_string(), 300, 300);
+  let controller = Controller::new(T0001.to_string(), 10, 6);
   assert_eq!(expected, text(controller.content()));
+  assert_eq!("(0, 0, 10, 6)", controller.viewport().to_string());
 }
