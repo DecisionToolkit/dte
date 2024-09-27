@@ -2,8 +2,6 @@
 
 use crate::cursor::{Cursor, CursorShape};
 use crate::Region;
-use std::fmt;
-use std::fmt::Display;
 
 /// Checks whether the specified character is a box-drawing character.
 macro_rules! is_frame {
@@ -31,13 +29,6 @@ pub(crate) struct Model {
   cursor: Cursor,
   /// Calculated size of the textual content.
   size: Option<Region>,
-}
-
-impl Display for Model {
-  /// Implements [Display] trait for the [Model].
-  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    write!(f, "{}", self.content.iter().map(|line| line.iter().collect::<String>()).collect::<Vec<String>>().join("\n"))
-  }
 }
 
 impl Model {
