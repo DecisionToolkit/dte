@@ -1,0 +1,2 @@
+# Helpful information for contributors
+
