@@ -6,7 +6,7 @@ use crossterm::style::{Print, Stylize};
 use crossterm::{execute, queue};
 use dtee::{Controller, Region};
 use std::cmp::min;
-use std::io::{Result, Stdout, Write};
+use std::io::{Stdout, Write};
 
 /// Minimal terminal width before locking the screen.
 const MIN_TERMINAL_WIDTH: usize = 30;
@@ -24,8 +24,8 @@ pub struct Editor {
 }
 
 impl Editor {
-  /// Creates a new editor initialized with specified text.
-  pub fn new(text: String) -> Result<Self> {
+  /// Creates a new editor populated with specified text.
+  pub fn new(text: String) -> std::io::Result<Self> {
     let stdout = std::io::stdout();
     let (width, height) = t_size()?;
     let controller = Controller::new(text, width, height);
@@ -33,7 +33,7 @@ impl Editor {
   }
 
   /// Starts text editing loop.
-  pub fn start(&mut self) -> Result<()> {
+  pub fn start(&mut self) -> std::io::Result<()> {
     execute!(self.stdout, t_enter_alternate_screen())?;
     execute!(self.stdout, t_clear_all())?;
     execute!(self.stdout, c_blinking_bar(), c_show())?;
@@ -54,14 +54,14 @@ impl Editor {
     Ok(())
   }
 
-  fn process_key_when_locked(&mut self, event: Key) -> Result<()> {
+  fn process_key_when_locked(&mut self, event: Key) -> std::io::Result<()> {
     if let Key::Resize(width, height) = event {
       self.action_resize(width, height)?
     }
     Ok(())
   }
 
-  fn process_key_when_unlocked(&mut self, event: Key) -> Result<()> {
+  fn process_key_when_unlocked(&mut self, event: Key) -> std::io::Result<()> {
     match event {
       Key::Right => self.action_cursor_move_right()?,
       Key::Left => self.action_cursor_move_left()?,
@@ -81,57 +81,57 @@ impl Editor {
     Ok(())
   }
 
-  fn action_cursor_move_right(&mut self) -> Result<()> {
+  fn action_cursor_move_right(&mut self) -> std::io::Result<()> {
     let res = self.controller.cursor_move_right();
     self.cursor_move(res)
   }
 
-  fn action_cursor_move_left(&mut self) -> Result<()> {
+  fn action_cursor_move_left(&mut self) -> std::io::Result<()> {
     let res = self.controller.cursor_move_left();
     self.cursor_move(res)
   }
 
-  fn action_cursor_move_up(&mut self) -> Result<()> {
+  fn action_cursor_move_up(&mut self) -> std::io::Result<()> {
     let res = self.controller.cursor_move_up();
     self.cursor_move(res)
   }
 
-  fn action_cursor_move_down(&mut self) -> Result<()> {
+  fn action_cursor_move_down(&mut self) -> std::io::Result<()> {
     let res = self.controller.cursor_move_down();
     self.cursor_move(res)
   }
 
-  fn action_cursor_move_cell_start(&mut self) -> Result<()> {
+  fn action_cursor_move_cell_start(&mut self) -> std::io::Result<()> {
     let res = self.controller.cursor_move_cell_start();
     self.cursor_move(res)
   }
 
-  fn action_cursor_move_cell_end(&mut self) -> Result<()> {
+  fn action_cursor_move_cell_end(&mut self) -> std::io::Result<()> {
     let res = self.controller.cursor_move_cell_end();
     self.cursor_move(res)
   }
 
-  fn action_cursor_move_row_start(&mut self) -> Result<()> {
+  fn action_cursor_move_row_start(&mut self) -> std::io::Result<()> {
     let res = self.controller.cursor_move_row_start();
     self.cursor_move(res)
   }
 
-  fn action_cursor_move_row_end(&mut self) -> Result<()> {
+  fn action_cursor_move_row_end(&mut self) -> std::io::Result<()> {
     let res = self.controller.cursor_move_row_end();
     self.cursor_move(res)
   }
 
-  fn action_cursor_move_cell_next(&mut self) -> Result<()> {
+  fn action_cursor_move_cell_next(&mut self) -> std::io::Result<()> {
     let res = self.controller.cursor_move_cell_next();
     self.cursor_move(res)
   }
 
-  fn action_cursor_move_cell_prev(&mut self) -> Result<()> {
+  fn action_cursor_move_cell_prev(&mut self) -> std::io::Result<()> {
     let res = self.controller.cursor_move_cell_prev();
     self.cursor_move(res)
   }
 
-  fn action_cursor_toggle_bar_block(&mut self) -> Result<()> {
+  fn action_cursor_toggle_bar_block(&mut self) -> std::io::Result<()> {
     self.controller.cursor_toggle_bar_block();
     if self.controller.cursor_is_bar() {
       execute!(self.stdout, c_blinking_bar())?;
@@ -148,10 +148,10 @@ impl Editor {
     Ok(())
   }
 
-  fn action_resize(&mut self, width: usize, height: usize) -> Result<()> {
-    let dirties = self.controller.resize(width, height);
-    if width < MIN_TERMINAL_WIDTH || height < MIN_TERMINAL_HEIGHT {
-      execute!(self.stdout, c_hide(), t_clear_all(), c_move(0, 0), Print("I'm squeezed!".yellow().bold()))?;
+  fn action_resize(&mut self, new_width: usize, new_height: usize) -> std::io::Result<()> {
+    let dirties = self.controller.resize(new_width, new_height);
+    if new_width < MIN_TERMINAL_WIDTH || new_height < MIN_TERMINAL_HEIGHT {
+      execute!(self.stdout, c_hide(), t_clear_all(), c_move(0, 0), Print(" 🍋 I'm squeezed!".yellow().bold()))?;
       self.locked = true;
     } else {
       if self.locked {
@@ -168,13 +168,13 @@ impl Editor {
     Ok(())
   }
 
-  fn action_write(&mut self, _ch: char) -> Result<()> {
+  fn action_write(&mut self, _ch: char) -> std::io::Result<()> {
     //TODO Implement the editing action.
     Ok(())
   }
 
   /// Repaints specified regions.
-  fn repaint(&mut self, regions: &[Region]) -> Result<()> {
+  fn repaint(&mut self, regions: &[Region]) -> std::io::Result<()> {
     if !regions.is_empty() {
       queue!(self.stdout, c_hide())?;
       let (offset_left, offset_top) = self.controller.viewport().offset();
@@ -204,11 +204,11 @@ impl Editor {
   }
 
   /// Repaints the whole viewport.
-  fn repaint_all(&mut self) -> Result<()> {
+  fn repaint_all(&mut self) -> std::io::Result<()> {
     self.repaint(&[*self.controller.viewport()])
   }
 
-  fn cursor_move(&mut self, repaint: Option<bool>) -> Result<()> {
+  fn cursor_move(&mut self, repaint: Option<bool>) -> std::io::Result<()> {
     if let Some(repaint) = repaint {
       if repaint {
         self.repaint_all()?;
@@ -218,7 +218,7 @@ impl Editor {
     Ok(())
   }
 
-  fn update_cursor_position(&mut self) -> Result<()> {
+  fn update_cursor_position(&mut self) -> std::io::Result<()> {
     let (col, row) = self.controller.cursor_position();
     let (left, top) = self.controller.viewport().offset();
     execute!(self.stdout, c_move(col.saturating_sub(left), row.saturating_sub(top)))

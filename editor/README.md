@@ -28,6 +28,18 @@ Decision table editor.
 
 Work in progress.
 
+To run the examples, type:
+
+```shell
+$ task run1
+```
+
+or
+
+```shell
+$ task run2
+```
+
 ## License
 
 Licensed under either of
