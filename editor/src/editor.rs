@@ -224,7 +224,7 @@ impl Editor {
     Ok(())
   }
 
-  fn update_cursor_position(&mut self) -> std::io::Result<()> {
+  fn update_cursor_position(&mut self) -> Result<()> {
     let (col, row) = self.controller.cursor_position();
     let (left, top) = self.controller.viewport().offset();
     execute!(self.stdout, c_move(col.saturating_sub(left), row.saturating_sub(top)))
