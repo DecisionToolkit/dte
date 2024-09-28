@@ -10,7 +10,7 @@
 
 WORKING_DIRECTORY=$(pwd)
 
-cargo +stable tarpaulin --workspace --all-features --force-clean --out Html --engine llvm --output-dir "$WORKING_DIRECTORY/target/tov"
+cargo +stable tarpaulin -p "$1" --all-features --force-clean --out Html --engine llvm --output-dir "$WORKING_DIRECTORY/target/tov"
 
 echo ""
 echo "Open the coverage report:"

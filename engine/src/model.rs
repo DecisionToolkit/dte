@@ -240,7 +240,7 @@ impl Model {
 
   fn row(&self) -> Option<&[char]> {
     let row = self.cursor.row();
-    if row > 0 && row < self.content.len() - 1 {
+    if row > 0 && row < self.content.len().saturating_sub(1) {
       return Some(&self.content[row]);
     }
     None
@@ -293,5 +293,26 @@ impl Model {
 
   pub fn cursor_is_underscore(&self) -> bool {
     self.cursor.is_underscore()
+  }
+}
+
+#[cfg(test)]
+mod tests {
+
+  use super::*;
+
+  #[test]
+  fn empty_model() {
+    let mut model = Model::new("");
+    assert_eq!(None, model.row());
+    assert_eq!(None, model.after(&['a']));
+    assert_eq!(None, model.before(&['a']));
+    assert_eq!(false, model.cursor_move_cell_next());
+    assert_eq!(false, model.cursor_move_cell_prev());
+    assert_eq!(false, model.cursor_move_cell_start());
+    assert_eq!(false, model.cursor_move_cell_end());
+    assert_eq!(false, model.cursor_move_row_start());
+    assert_eq!(false, model.cursor_move_row_end());
+    assert_eq!(None, model.cursor_char());
   }
 }
