@@ -83,7 +83,7 @@ impl Editor {
   }
 
   fn action_show_help(&mut self) -> Result<()> {
-    //TODO Implement displaying alternate screen with the help.
+    //TODO Implement displaying a screen with the help.
     Ok(())
   }
 
@@ -139,7 +139,7 @@ impl Editor {
 
   fn action_cursor_toggle_bar_block(&mut self) -> Result<()> {
     self.controller.cursor_toggle_bar_block();
-    if self.controller.cursor_is_bar() {
+    if self.controller.cursor_is_caret() {
       execute!(self.stdout, c_blinking_bar())?;
     }
     if self.controller.cursor_is_block() {
@@ -174,8 +174,8 @@ impl Editor {
     Ok(())
   }
 
-  fn action_write(&mut self, _ch: char) -> Result<()> {
-    //TODO Implement the editing action.
+  fn action_write(&mut self, ch: char) -> Result<()> {
+    self.controller.write_char(ch);
     Ok(())
   }
 

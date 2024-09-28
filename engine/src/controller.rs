@@ -139,6 +139,11 @@ impl Controller {
     None
   }
 
+  /// Processes a single character.
+  pub fn write_char(&mut self, _ch: char) {
+    //TODO Process the character.
+  }
+
   pub fn cursor_toggle(&mut self) {
     self.model.cursor_toggle();
   }

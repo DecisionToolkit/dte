@@ -138,14 +138,8 @@ version = "0.0.4"
 dependencies = [
  "clap",
  "crossterm",
- "dtee 0.0.3",
+ "dtee",
 ]
-
-[[package]]
-name = "dtee"
-version = "0.0.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "33fc8ba16018b69426bfd311be835db543df1e20ebc9fb880d1759cae30f5c66"
 
 [[package]]
 name = "dtee"
