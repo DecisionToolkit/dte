@@ -1,6 +1,6 @@
 //! Test controller constructors.
 
-use crate::test_files::INPUT_0001;
+use crate::test_files::*;
 use crate::text;
 use dtee::Controller;
 
@@ -27,7 +27,7 @@ fn larger_view() {
   const HEIGHT: usize = 200; // this is a height of the display area
 
   // both width and height are greater than the width and height of the loaded content
-  let mut controller = Controller::new(INPUT_0001.to_string(), WIDTH, HEIGHT);
+  let mut controller = Controller::new(INPUT_0001, WIDTH, HEIGHT);
   assert_eq!(expected, text(controller.content()));
 
   // viewport size is set to the display size
@@ -64,7 +64,7 @@ fn smaller_view() {
   const HEIGHT: usize = 6; // this is a height of the display area
 
   // both width and height are less than the width and height of the loaded content
-  let mut controller = Controller::new(INPUT_0001.to_string(), 10, 6);
+  let mut controller = Controller::new(INPUT_0001, 10, 6);
   assert_eq!(expected, text(controller.content()));
 
   // viewport size is set to the display size
@@ -76,4 +76,13 @@ fn smaller_view() {
 
   // this is the region of the edited text
   assert_eq!("(0, 0, 45, 15)", controller.content_region().to_string());
+}
+
+#[test]
+fn empty_lines_are_skipped() {
+  let mut controller2 = Controller::new(INPUT_0001, 600, 600);
+  let mut controller3 = Controller::new(INPUT_0003, 600, 600);
+  assert_eq!(controller2.content(), controller3.content());
+  assert_eq!(controller2.content_region(), controller3.content_region());
+  assert_eq!(text(controller2.content()), text(controller3.content()));
 }
