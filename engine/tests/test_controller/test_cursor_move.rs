@@ -735,3 +735,19 @@ fn _0023() {
 }
 
 //TODO cell next/prev special cases
+
+#[test]
+fn cursor_toggle_should_work() {
+  let mut controller = Controller::new(INPUT_0002, WIDTH, HEIGHT);
+  assert!(controller.cursor_is_caret());
+  controller.cursor_toggle();
+  assert!(controller.cursor_is_block());
+  controller.cursor_toggle();
+  assert!(controller.cursor_is_underscore());
+  controller.cursor_toggle();
+  assert!(controller.cursor_is_caret());
+  controller.cursor_toggle_bar_block();
+  assert!(controller.cursor_is_block());
+  controller.cursor_toggle_bar_block();
+  assert!(controller.cursor_is_caret());
+}
