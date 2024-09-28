@@ -430,13 +430,13 @@ fn _0015() {
 }
 
 /// Moving to the row end and row start when the viewing area is narrower
-/// than the decision table width.
+/// than the decision table width. This test uses all cursor shapes.
 ///
 /// ```text
 /// ┌─────────────────┐
 /// │  Order options  │
 /// ├───┬───────────┬─┴─────╥─────────────────────╥─────────────┬───────────┐
-/// │█U │           │       ║    Order options    ║             │           │
+/// │█U │           │       ║    Order options    ║             │          █│
 /// │   │ Customer  │ Order ╟──────────┬──────────╢ Description │ Reference │
 /// ```
 #[test]
@@ -447,9 +447,32 @@ fn _0016() {
   // move one down
   assert_eq!(Some(false), controller.cursor_move_down());
   assert_eq!((1, 3), controller.cursor_position());
+
+  // CARET
+  assert!(controller.cursor_is_caret());
   // move to the end of the row, change with update
   assert_eq!(Some(true), controller.cursor_move_row_end());
   assert_eq!((72, 3), controller.cursor_position());
+  // move to row start should generate a change with update
+  assert_eq!(Some(true), controller.cursor_move_row_start());
+  assert_eq!((1, 3), controller.cursor_position());
+
+  // BLOCK
+  controller.cursor_toggle();
+  assert!(controller.cursor_is_block());
+  // move to the end of the row, change with update
+  assert_eq!(Some(true), controller.cursor_move_row_end());
+  assert_eq!((71, 3), controller.cursor_position());
+  // move to row start should generate a change with update
+  assert_eq!(Some(true), controller.cursor_move_row_start());
+  assert_eq!((1, 3), controller.cursor_position());
+
+  // UNDERSCORE
+  controller.cursor_toggle();
+  assert!(controller.cursor_is_underscore());
+  // move to the end of the row, change with update
+  assert_eq!(Some(true), controller.cursor_move_row_end());
+  assert_eq!((71, 3), controller.cursor_position());
   // move to row start should generate a change with update
   assert_eq!(Some(true), controller.cursor_move_row_start());
   assert_eq!((1, 3), controller.cursor_position());
@@ -734,7 +757,98 @@ fn _0023() {
   assert_eq!((35, 3), controller.cursor_position());
 }
 
+/// Cursor should jump over vertical lines when moved right and left,
+/// this test is for `caret` cursor.
+#[test]
+fn _0024() {
+  let mut controller = Controller::new(INPUT_0002, WIDTH, HEIGHT);
+  // initial cursor position is (1, 1)
+  assert_eq!((1, 1), controller.cursor_position());
+  assert!(controller.cursor_is_caret());
+  // move one down
+  assert_eq!(Some(false), controller.cursor_move_down());
+  assert_eq!((1, 3), controller.cursor_position());
+  (1..=71).for_each(|_| {
+    assert_eq!(Some(false), controller.cursor_move_right());
+  });
+  assert_eq!((72, 3), controller.cursor_position());
+  (1..=100).for_each(|_| {
+    assert_eq!(None, controller.cursor_move_right());
+    assert_eq!((72, 3), controller.cursor_position());
+  });
+  (1..=71).for_each(|_| {
+    assert_eq!(Some(false), controller.cursor_move_left());
+  });
+  assert_eq!((1, 3), controller.cursor_position());
+  (1..=100).for_each(|_| {
+    assert_eq!(None, controller.cursor_move_left());
+    assert_eq!((1, 3), controller.cursor_position());
+  });
+}
+
+/// Cursor should jump over vertical lines when moved right and left,
+/// this test is for `block` cursor.
+#[test]
+fn _0025() {
+  let mut controller = Controller::new(INPUT_0002, WIDTH, HEIGHT);
+  // initial cursor position is (1, 1)
+  assert_eq!((1, 1), controller.cursor_position());
+  controller.cursor_toggle();
+  assert!(controller.cursor_is_block());
+  // move one down
+  assert_eq!(Some(false), controller.cursor_move_down());
+  assert_eq!((1, 3), controller.cursor_position());
+  (1..=65).for_each(|_| {
+    assert_eq!(Some(false), controller.cursor_move_right());
+  });
+  assert_eq!((71, 3), controller.cursor_position());
+  (1..=100).for_each(|_| {
+    assert_eq!(None, controller.cursor_move_right());
+    assert_eq!((71, 3), controller.cursor_position());
+  });
+  (1..=65).for_each(|_| {
+    assert_eq!(Some(false), controller.cursor_move_left());
+  });
+  assert_eq!((1, 3), controller.cursor_position());
+  (1..=100).for_each(|_| {
+    assert_eq!(None, controller.cursor_move_left());
+    assert_eq!((1, 3), controller.cursor_position());
+  });
+}
+
+/// Cursor should jump over vertical lines when moved right and left,
+/// this test is for `underscore` cursor.
+#[test]
+fn _0026() {
+  let mut controller = Controller::new(INPUT_0002, WIDTH, HEIGHT);
+  // initial cursor position is (1, 1)
+  assert_eq!((1, 1), controller.cursor_position());
+  controller.cursor_toggle();
+  controller.cursor_toggle();
+  assert!(controller.cursor_is_underscore());
+  // move one down
+  assert_eq!(Some(false), controller.cursor_move_down());
+  assert_eq!((1, 3), controller.cursor_position());
+  (1..=65).for_each(|_| {
+    assert_eq!(Some(false), controller.cursor_move_right());
+  });
+  assert_eq!((71, 3), controller.cursor_position());
+  (1..=100).for_each(|_| {
+    assert_eq!(None, controller.cursor_move_right());
+    assert_eq!((71, 3), controller.cursor_position());
+  });
+  (1..=65).for_each(|_| {
+    assert_eq!(Some(false), controller.cursor_move_left());
+  });
+  assert_eq!((1, 3), controller.cursor_position());
+  (1..=100).for_each(|_| {
+    assert_eq!(None, controller.cursor_move_left());
+    assert_eq!((1, 3), controller.cursor_position());
+  });
+}
+
 //TODO cell next/prev special cases
+//TODO move right/left special cases
 
 #[test]
 fn cursor_toggle_should_work() {
