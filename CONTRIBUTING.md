@@ -1,4 +1,4 @@
-# Helpful information for contributors
+# Contributing
 
 To run the examples, type:
 
@@ -12,4 +12,4 @@ or
 $ task run2
 ```
 
-🔥 To stop editing press: `ctrl+q`
+🔥 To stop editing decision table press: `ctrl + q`
