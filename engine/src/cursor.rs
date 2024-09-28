@@ -26,6 +26,7 @@ impl Cursor {
     Self { shape, column, row }
   }
 
+  /// Returns the cursor coordinates as a tuple `(column, row)`.
   pub fn get(&self) -> (usize, usize) {
     (self.column, self.row)
   }

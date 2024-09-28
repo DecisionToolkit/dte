@@ -33,8 +33,9 @@ pub(crate) struct Model {
 
 impl Model {
   /// Creates a new text plane populated with specified content.
-  pub fn new(content: String) -> Self {
+  pub fn new<T: ToString>(content: T) -> Self {
     let content = content
+      .to_string()
       .lines()
       .filter_map(|line| {
         let line = line.trim();
@@ -67,7 +68,9 @@ impl Model {
     self.size.unwrap()
   }
 
-  /// Returns the position of the cursor in text plane's coordinates.
+  /// Returns the position of the cursor in edited text coordinates.
+  ///
+  /// Cursor position is a tuple `(column, row)`.
   pub fn cursor_position(&self) -> (usize, usize) {
     self.cursor.get()
   }

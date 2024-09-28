@@ -18,11 +18,10 @@ impl Controller {
   /// ```
   /// use dtee::Controller;
   ///
-  /// # let decision_table = "...".to_string();
-  /// let controller = Controller::new(decision_table, 200, 100);
+  /// let controller = Controller::new("…", 200, 100);
   /// assert!(!controller.content().is_empty());
   /// ```
-  pub fn new(content: String, width: usize, height: usize) -> Self {
+  pub fn new<T: ToString>(content: T, width: usize, height: usize) -> Self {
     let model = Model::new(content);
     let viewport = Region::new(0, 0, width, height);
     Self { model, viewport }
@@ -45,6 +44,19 @@ impl Controller {
   }
 
   /// Returns the cursor position in model coordinates.
+  ///
+  /// Cursor position is a tuple `(column, row)`.
+  ///
+  /// # Examples
+  ///
+  /// ```
+  /// use dtee::Controller;
+  ///
+  /// let controller = Controller::new("…", 100, 100);
+  /// let (column, row) = controller.cursor_position();
+  /// assert_eq!(1, column);
+  /// assert_eq!(1, row);
+  /// ```
   pub fn cursor_position(&self) -> (usize, usize) {
     self.model.cursor_position()
   }

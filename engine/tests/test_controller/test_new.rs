@@ -1,11 +1,11 @@
 //! Test controller constructors.
 
-use crate::test_files::T0001;
+use crate::test_files::INPUT_0001;
 use crate::text;
 use dtee::Controller;
 
 #[test]
-fn test_controller_new() {
+fn test_new() {
   let expected = r#"
     ┌───────┐
     │  SLA  │
@@ -27,7 +27,7 @@ fn test_controller_new() {
   const HEIGHT: usize = 200; // this is a height of the display area
 
   // both width and height are greater than the width and height of the loaded content
-  let mut controller = Controller::new(T0001.to_string(), WIDTH, HEIGHT);
+  let mut controller = Controller::new(INPUT_0001.to_string(), WIDTH, HEIGHT);
   assert_eq!(expected, text(controller.content()));
 
   // viewport size is set to the display size
@@ -42,7 +42,7 @@ fn test_controller_new() {
 }
 
 #[test]
-fn test_controller_new_small() {
+fn test_new_small() {
   let expected = r#"
     ┌───────┐
     │  SLA  │
@@ -64,7 +64,7 @@ fn test_controller_new_small() {
   const HEIGHT: usize = 6; // this is a height of the display area
 
   // both width and height are less than the width and height of the loaded content
-  let mut controller = Controller::new(T0001.to_string(), 10, 6);
+  let mut controller = Controller::new(INPUT_0001.to_string(), 10, 6);
   assert_eq!(expected, text(controller.content()));
 
   // viewport size is set to the display size
