@@ -11,6 +11,17 @@ pub struct Controller {
 }
 
 impl Controller {
+  /// Creates a new controller with specified content and viewing area.
+  ///
+  /// # Examples
+  ///
+  /// ```
+  /// use dtee::Controller;
+  ///
+  /// # let decision_table = "...".to_string();
+  /// let controller = Controller::new(decision_table, 200, 100);
+  /// assert!(!controller.content().is_empty());
+  /// ```
   pub fn new(content: String, width: usize, height: usize) -> Self {
     let model = Model::new(content);
     let viewport = Region::new(0, 0, width, height);

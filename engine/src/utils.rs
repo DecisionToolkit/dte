@@ -15,7 +15,7 @@ pub const DEBUG_FILE_NAME: &str = "../target/debug.txt";
 ///
 /// This function panics if any i/o error occurs.
 ///
-/// # Example
+/// # Examples
 ///
 /// ```
 /// use dtee::debug_to_file;
