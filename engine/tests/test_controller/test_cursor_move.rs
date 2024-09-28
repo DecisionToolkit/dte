@@ -34,7 +34,7 @@ const HEIGHT: usize = 600;
 /// of the decision table, so moving cursor to the left should
 /// have no effect, cursor stays where it was.
 #[test]
-fn test_0001() {
+fn _0001() {
   let mut controller = Controller::new(INPUT_0002, WIDTH, HEIGHT);
   // initial cursor position is (1, 1)
   assert_eq!((1, 1), controller.cursor_position());

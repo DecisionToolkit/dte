@@ -72,3 +72,8 @@ tasks:
     desc: Runs all tests in debug mode
     cmds:
       - cmd: cargo +stable test --workspace
+
+  testn:
+    desc: Runs all tests in debug mode using nextest
+    cmds:
+      - cmd: cargo +stable nextest run --workspace

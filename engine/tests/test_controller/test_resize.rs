@@ -4,7 +4,7 @@ use crate::test_files::INPUT_0001;
 use dtee::Controller;
 
 #[test]
-fn test_shrink() {
+fn shrink_view() {
   // width and height of the display area are greater than the width and height of the loaded content
   let mut controller = Controller::new(INPUT_0001.to_string(), 600, 600);
   // now the display area is shrunk
@@ -15,7 +15,7 @@ fn test_shrink() {
 }
 
 #[test]
-fn test_extend() {
+fn extend_view() {
   // width and height of the display area are greater than the width and height of the loaded content
   let mut controller = Controller::new(INPUT_0001.to_string(), 600, 600);
   // now the display area is extended

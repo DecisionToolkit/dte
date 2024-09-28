@@ -1,5 +1,4 @@
 mod test_controller;
-mod test_debug;
 mod test_files;
 
 use std::fmt::Write;

@@ -5,7 +5,7 @@ use crate::text;
 use dtee::Controller;
 
 #[test]
-fn test_new() {
+fn larger_view() {
   let expected = r#"
     ┌───────┐
     │  SLA  │
@@ -42,7 +42,7 @@ fn test_new() {
 }
 
 #[test]
-fn test_new_small() {
+fn smaller_view() {
   let expected = r#"
     ┌───────┐
     │  SLA  │
