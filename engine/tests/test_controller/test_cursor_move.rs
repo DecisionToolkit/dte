@@ -1,4 +1,4 @@
-//! Test moving the cursor to the left.
+//! Tests for cursor moves.
 //!
 //! The input decision table used in the following test cases looks like this:
 //!
