@@ -3,8 +3,8 @@
 /// Cursor shapes.
 #[derive(Copy, Clone, Eq, PartialEq, Hash)]
 pub enum CursorShape {
-  /// Cursor is represented as a vertical bar, similar to `│`.
-  Bar,
+  /// Cursor is represented as a vertical caret, similar to `│`.
+  Caret,
   /// Cursor is represented as a block, similar to `█`.
   Block,
   /// Cursor is represented as an underscore, similar to `_`.
@@ -76,8 +76,8 @@ impl Cursor {
   }
 
   /// Returns `true` when the current cursor shape is a bar (`│`).
-  pub fn is_bar(&self) -> bool {
-    matches!(self.shape, CursorShape::Bar)
+  pub fn is_caret(&self) -> bool {
+    matches!(self.shape, CursorShape::Caret)
   }
 
   /// Returns `true` when the current cursor shape is a block (`█`).
@@ -92,16 +92,16 @@ impl Cursor {
 
   pub fn toggle(&mut self) {
     match self.shape {
-      CursorShape::Bar => self.shape = CursorShape::Block,
+      CursorShape::Caret => self.shape = CursorShape::Block,
       CursorShape::Block => self.shape = CursorShape::UnderScore,
-      CursorShape::UnderScore => self.shape = CursorShape::Bar,
+      CursorShape::UnderScore => self.shape = CursorShape::Caret,
     }
   }
 
   pub fn toggle_bar_block(&mut self) {
     match self.shape {
-      CursorShape::Bar => self.shape = CursorShape::Block,
-      _ => self.shape = CursorShape::Bar,
+      CursorShape::Caret => self.shape = CursorShape::Block,
+      _ => self.shape = CursorShape::Caret,
     }
   }
 }

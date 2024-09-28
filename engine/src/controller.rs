@@ -147,8 +147,8 @@ impl Controller {
     self.model.cursor_toggle_bar_block();
   }
 
-  pub fn cursor_is_bar(&self) -> bool {
-    self.model.cursor_is_bar()
+  pub fn cursor_is_caret(&self) -> bool {
+    self.model.cursor_is_caret()
   }
 
   pub fn cursor_is_block(&self) -> bool {

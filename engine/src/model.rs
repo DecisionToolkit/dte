@@ -49,7 +49,7 @@ impl Model {
       .iter()
       .map(|line| line.chars().collect::<Vec<char>>())
       .collect::<Vec<Vec<char>>>();
-    let cursor = Cursor::new(CursorShape::Bar, 1, 1);
+    let cursor = Cursor::new(CursorShape::Caret, 1, 1);
     Self { content, cursor, size: None }
   }
 
@@ -142,10 +142,11 @@ impl Model {
   pub fn cursor_move_cell_start(&mut self) -> bool {
     if let Some(row) = self.row() {
       if let Some(chars) = self.before(row) {
+        let old_column = self.cursor.col();
         for (offset, ch) in chars.iter().rev().enumerate() {
           if is_frame!(ch) {
             self.cursor.dec_col(offset);
-            return true;
+            return self.cursor.col() != old_column;
           }
         }
       }
@@ -157,10 +158,11 @@ impl Model {
   pub fn cursor_move_cell_end(&mut self) -> bool {
     if let Some(row) = self.row() {
       if let Some(chars) = self.after(row) {
+        let old_column = self.cursor.col();
         for (offset, ch) in chars.iter().enumerate() {
           if is_frame!(ch) {
-            self.cursor.inc_col(if self.cursor.is_bar() { offset } else { offset.saturating_sub(1) });
-            return true;
+            self.cursor.inc_col(if self.cursor.is_caret() { offset } else { offset.saturating_sub(1) });
+            return self.cursor.col() != old_column;
           }
         }
       }
@@ -171,10 +173,11 @@ impl Model {
   /// Places the cursor at the first character of the first cell in the same row.
   pub fn cursor_move_row_start(&mut self) -> bool {
     if let Some(row) = self.row() {
+      let old_column = self.cursor.col();
       for (pos, ch) in row.iter().enumerate() {
         if !is_frame!(ch) {
           self.cursor.set_col(pos);
-          return true;
+          return self.cursor.col() != old_column;
         }
       }
     }
@@ -184,14 +187,15 @@ impl Model {
   /// Places the cursor at the last character of the last cell in the same row.
   pub fn cursor_move_row_end(&mut self) -> bool {
     if let Some(row) = self.row() {
+      let old_column = self.cursor.col();
       let len = row.len();
       for (mut pos, ch) in row.iter().rev().enumerate() {
         if !is_frame!(ch) {
-          if !self.cursor.is_bar() {
+          if !self.cursor.is_caret() {
             pos = pos.saturating_add(1);
           }
           self.cursor.set_col(len.saturating_sub(pos));
-          return true;
+          return self.cursor.col() != old_column;
         }
       }
     }
@@ -223,7 +227,7 @@ impl Model {
         if let Some(chars) = self.before(row) {
           for (offset, ch) in chars.iter().rev().enumerate() {
             if !is_frame!(ch) {
-              self.cursor.dec_col(if self.cursor.is_bar() { offset } else { offset.saturating_add(1) });
+              self.cursor.dec_col(if self.cursor.is_caret() { offset } else { offset.saturating_add(1) });
               break;
             }
           }
@@ -262,7 +266,7 @@ impl Model {
   fn is_allowed_position(&self, row_offset: isize, col_offset: isize) -> bool {
     let (col, row) = self.cursor.offset(col_offset, row_offset);
     if row > 0 && row < self.content.len() - 1 && col > 0 && col < self.content[row].len() {
-      if self.cursor.is_bar() {
+      if self.cursor.is_caret() {
         return !is_frame!(self.content[row][col]) || is_vert_line_left!(self.content[row][col]);
       } else if col < self.content[row].len() - 1 {
         return !is_frame!(self.content[row][col]);
@@ -279,8 +283,8 @@ impl Model {
     self.cursor.toggle_bar_block();
   }
 
-  pub fn cursor_is_bar(&self) -> bool {
-    self.cursor.is_bar()
+  pub fn cursor_is_caret(&self) -> bool {
+    self.cursor.is_caret()
   }
 
   pub fn cursor_is_block(&self) -> bool {
