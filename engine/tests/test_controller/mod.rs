@@ -1,2 +1,2 @@
-mod test_controller_new;
-mod test_controller_resize;
+mod test_new;
+mod test_resize;

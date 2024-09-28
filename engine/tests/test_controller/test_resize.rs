@@ -1,3 +1,5 @@
+//! Test resizing the display area.
+
 use crate::test_files::T0001;
 use dtee::Controller;
 

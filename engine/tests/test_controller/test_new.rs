@@ -1,3 +1,5 @@
+//! Test controller constructors.
+
 use crate::test_files::T0001;
 use crate::text;
 use dtee::Controller;
@@ -23,14 +25,18 @@ fn test_controller_new() {
   "#;
   const WIDTH: usize = 300; // this is a width of the display area
   const HEIGHT: usize = 200; // this is a height of the display area
-                             // both width and height are greater than the width and height of the loaded content
+
+  // both width and height are greater than the width and height of the loaded content
   let mut controller = Controller::new(T0001.to_string(), WIDTH, HEIGHT);
   assert_eq!(expected, text(controller.content()));
+
   // viewport size is set to the display size
   assert_eq!(format!("(0, 0, {WIDTH}, {HEIGHT})"), controller.viewport().to_string());
+
   // cursor position should be in the left top corner, but not at the '┌' character
-  // that's why it is (1, 1) and NOT (0, 0)
+  // that's why it is (1, 1) and not (0, 0)
   assert_eq!((1, 1), controller.cursor_position());
+
   // this is the region of the edited text
   assert_eq!("(0, 0, 45, 15)", controller.content_region().to_string());
 }
@@ -56,14 +62,18 @@ fn test_controller_new_small() {
   "#;
   const WIDTH: usize = 10; // this is a width of the display area
   const HEIGHT: usize = 6; // this is a height of the display area
-                           // both width and height are less than the width and height of the loaded content
+
+  // both width and height are less than the width and height of the loaded content
   let mut controller = Controller::new(T0001.to_string(), 10, 6);
   assert_eq!(expected, text(controller.content()));
+
   // viewport size is set to the display size
   assert_eq!(format!("(0, 0, {WIDTH}, {HEIGHT})"), controller.viewport().to_string());
+
   // cursor position should be in the left top corner, but not at the '┌' character
-  // that's why it is (1, 1) and NOT (0, 0)
+  // that's why it is (1, 1) and not (0, 0)
   assert_eq!((1, 1), controller.cursor_position());
+
   // this is the region of the edited text
   assert_eq!("(0, 0, 45, 15)", controller.content_region().to_string());
 }
