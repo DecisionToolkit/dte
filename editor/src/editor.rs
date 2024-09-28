@@ -6,13 +6,13 @@ use crossterm::style::{Print, Stylize};
 use crossterm::{execute, queue};
 use dtee::{Controller, Region};
 use std::cmp::min;
-use std::io::{Stdout, Write};
+use std::io::{Result, Stdout, Write};
 
-/// Minimal terminal width before locking the screen.
-const MIN_TERMINAL_WIDTH: usize = 30;
+/// Minimal terminal width before `locking` the screen.
+const MINIMAL_TERMINAL_WIDTH: usize = 30;
 
-/// Minimal terminal height before locking the screen.
-const MIN_TERMINAL_HEIGHT: usize = 10;
+/// Minimal terminal height before `locking` the screen.
+const MINIMAL_TERMINAL_HEIGHT: usize = 10;
 
 /// Whitespace character used for filling empty regions.
 const WS: char = ' ';
@@ -25,7 +25,7 @@ pub struct Editor {
 
 impl Editor {
   /// Creates a new editor populated with specified text.
-  pub fn new(text: String) -> std::io::Result<Self> {
+  pub fn new(text: String) -> Result<Self> {
     let stdout = std::io::stdout();
     let (width, height) = t_size()?;
     let controller = Controller::new(text, width, height);
@@ -33,7 +33,7 @@ impl Editor {
   }
 
   /// Starts text editing loop.
-  pub fn start(&mut self) -> std::io::Result<()> {
+  pub fn start(&mut self) -> Result<()> {
     execute!(self.stdout, t_enter_alternate_screen())?;
     execute!(self.stdout, t_clear_all())?;
     execute!(self.stdout, c_blinking_bar(), c_show())?;
@@ -54,15 +54,16 @@ impl Editor {
     Ok(())
   }
 
-  fn process_key_when_locked(&mut self, event: Key) -> std::io::Result<()> {
+  fn process_key_when_locked(&mut self, event: Key) -> Result<()> {
     if let Key::Resize(width, height) = event {
       self.action_resize(width, height)?
     }
     Ok(())
   }
 
-  fn process_key_when_unlocked(&mut self, event: Key) -> std::io::Result<()> {
+  fn process_key_when_unlocked(&mut self, event: Key) -> Result<()> {
     match event {
+      Key::F1 => self.action_show_help()?,
       Key::Right => self.action_cursor_move_right()?,
       Key::Left => self.action_cursor_move_left()?,
       Key::Up => self.action_cursor_move_up()?,
@@ -81,57 +82,62 @@ impl Editor {
     Ok(())
   }
 
-  fn action_cursor_move_right(&mut self) -> std::io::Result<()> {
+  fn action_show_help(&mut self) -> Result<()> {
+    //TODO Implement displaying alternate screen with the help.
+    Ok(())
+  }
+
+  fn action_cursor_move_right(&mut self) -> Result<()> {
     let res = self.controller.cursor_move_right();
     self.cursor_move(res)
   }
 
-  fn action_cursor_move_left(&mut self) -> std::io::Result<()> {
+  fn action_cursor_move_left(&mut self) -> Result<()> {
     let res = self.controller.cursor_move_left();
     self.cursor_move(res)
   }
 
-  fn action_cursor_move_up(&mut self) -> std::io::Result<()> {
+  fn action_cursor_move_up(&mut self) -> Result<()> {
     let res = self.controller.cursor_move_up();
     self.cursor_move(res)
   }
 
-  fn action_cursor_move_down(&mut self) -> std::io::Result<()> {
+  fn action_cursor_move_down(&mut self) -> Result<()> {
     let res = self.controller.cursor_move_down();
     self.cursor_move(res)
   }
 
-  fn action_cursor_move_cell_start(&mut self) -> std::io::Result<()> {
+  fn action_cursor_move_cell_start(&mut self) -> Result<()> {
     let res = self.controller.cursor_move_cell_start();
     self.cursor_move(res)
   }
 
-  fn action_cursor_move_cell_end(&mut self) -> std::io::Result<()> {
+  fn action_cursor_move_cell_end(&mut self) -> Result<()> {
     let res = self.controller.cursor_move_cell_end();
     self.cursor_move(res)
   }
 
-  fn action_cursor_move_row_start(&mut self) -> std::io::Result<()> {
+  fn action_cursor_move_row_start(&mut self) -> Result<()> {
     let res = self.controller.cursor_move_row_start();
     self.cursor_move(res)
   }
 
-  fn action_cursor_move_row_end(&mut self) -> std::io::Result<()> {
+  fn action_cursor_move_row_end(&mut self) -> Result<()> {
     let res = self.controller.cursor_move_row_end();
     self.cursor_move(res)
   }
 
-  fn action_cursor_move_cell_next(&mut self) -> std::io::Result<()> {
+  fn action_cursor_move_cell_next(&mut self) -> Result<()> {
     let res = self.controller.cursor_move_cell_next();
     self.cursor_move(res)
   }
 
-  fn action_cursor_move_cell_prev(&mut self) -> std::io::Result<()> {
+  fn action_cursor_move_cell_prev(&mut self) -> Result<()> {
     let res = self.controller.cursor_move_cell_prev();
     self.cursor_move(res)
   }
 
-  fn action_cursor_toggle_bar_block(&mut self) -> std::io::Result<()> {
+  fn action_cursor_toggle_bar_block(&mut self) -> Result<()> {
     self.controller.cursor_toggle_bar_block();
     if self.controller.cursor_is_bar() {
       execute!(self.stdout, c_blinking_bar())?;
@@ -148,9 +154,9 @@ impl Editor {
     Ok(())
   }
 
-  fn action_resize(&mut self, new_width: usize, new_height: usize) -> std::io::Result<()> {
+  fn action_resize(&mut self, new_width: usize, new_height: usize) -> Result<()> {
     let dirties = self.controller.resize(new_width, new_height);
-    if new_width < MIN_TERMINAL_WIDTH || new_height < MIN_TERMINAL_HEIGHT {
+    if new_width < MINIMAL_TERMINAL_WIDTH || new_height < MINIMAL_TERMINAL_HEIGHT {
       execute!(self.stdout, c_hide(), t_clear_all(), c_move(0, 0), Print(" 🍋 I'm squeezed!".yellow().bold()))?;
       self.locked = true;
     } else {
@@ -168,13 +174,13 @@ impl Editor {
     Ok(())
   }
 
-  fn action_write(&mut self, _ch: char) -> std::io::Result<()> {
+  fn action_write(&mut self, _ch: char) -> Result<()> {
     //TODO Implement the editing action.
     Ok(())
   }
 
   /// Repaints specified regions.
-  fn repaint(&mut self, regions: &[Region]) -> std::io::Result<()> {
+  fn repaint(&mut self, regions: &[Region]) -> Result<()> {
     if !regions.is_empty() {
       queue!(self.stdout, c_hide())?;
       let (offset_left, offset_top) = self.controller.viewport().offset();
@@ -204,11 +210,11 @@ impl Editor {
   }
 
   /// Repaints the whole viewport.
-  fn repaint_all(&mut self) -> std::io::Result<()> {
+  fn repaint_all(&mut self) -> Result<()> {
     self.repaint(&[*self.controller.viewport()])
   }
 
-  fn cursor_move(&mut self, repaint: Option<bool>) -> std::io::Result<()> {
+  fn cursor_move(&mut self, repaint: Option<bool>) -> Result<()> {
     if let Some(repaint) = repaint {
       if repaint {
         self.repaint_all()?;

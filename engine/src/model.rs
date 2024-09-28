@@ -307,12 +307,12 @@ mod tests {
     assert_eq!(None, model.row());
     assert_eq!(None, model.after(&['a']));
     assert_eq!(None, model.before(&['a']));
-    assert_eq!(false, model.cursor_move_cell_next());
-    assert_eq!(false, model.cursor_move_cell_prev());
-    assert_eq!(false, model.cursor_move_cell_start());
-    assert_eq!(false, model.cursor_move_cell_end());
-    assert_eq!(false, model.cursor_move_row_start());
-    assert_eq!(false, model.cursor_move_row_end());
+    assert!(!model.cursor_move_cell_next());
+    assert!(!model.cursor_move_cell_prev());
+    assert!(!model.cursor_move_cell_start());
+    assert!(!model.cursor_move_cell_end());
+    assert!(!model.cursor_move_row_start());
+    assert!(!model.cursor_move_row_end());
     assert_eq!(None, model.cursor_char());
   }
 }

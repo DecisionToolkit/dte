@@ -9,7 +9,7 @@ tasks:
       - task: clean
       - task: fmt
       - task: build
-      - task: clippy-stable
+      - task: clippy
       - task: test
 
   build:
