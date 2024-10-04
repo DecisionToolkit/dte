@@ -1,7 +1,6 @@
 //! Test controller constructors.
 
-use crate::test_files::*;
-use crate::text;
+use super::*;
 use dtee::Controller;
 
 #[test]
@@ -28,7 +27,7 @@ fn larger_view() {
 
   // both width and height are greater than the width and height of the loaded content
   let mut controller = Controller::new(INPUT_0001, WIDTH, HEIGHT);
-  assert_eq!(expected, text(controller.content()));
+  assert_eq!(expected, text(&controller));
 
   // viewport size is set to the display size
   assert_eq!(format!("(0, 0, {WIDTH}, {HEIGHT})"), controller.viewport().to_string());
@@ -65,7 +64,7 @@ fn smaller_view() {
 
   // both width and height are less than the width and height of the loaded content
   let mut controller = Controller::new(INPUT_0001, 10, 6);
-  assert_eq!(expected, text(controller.content()));
+  assert_eq!(expected, text(&controller));
 
   // viewport size is set to the display size
   assert_eq!(format!("(0, 0, {WIDTH}, {HEIGHT})"), controller.viewport().to_string());
@@ -80,9 +79,9 @@ fn smaller_view() {
 
 #[test]
 fn empty_lines_are_skipped() {
-  let mut controller2 = Controller::new(INPUT_0001, 600, 600);
-  let mut controller3 = Controller::new(INPUT_0003, 600, 600);
-  assert_eq!(controller2.content(), controller3.content());
-  assert_eq!(controller2.content_region(), controller3.content_region());
-  assert_eq!(text(controller2.content()), text(controller3.content()));
+  let mut controller1 = Controller::new(INPUT_0001, 600, 600);
+  let mut controller2 = Controller::new(INPUT_0003, 600, 600);
+  assert_eq!(controller1.content(), controller2.content());
+  assert_eq!(controller1.content_region(), controller2.content_region());
+  assert_eq!(text(&controller1), text(&controller2));
 }

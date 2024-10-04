@@ -30,17 +30,17 @@ pub fn t_clear_all() -> crossterm::terminal::Clear {
   crossterm::terminal::Clear(crossterm::terminal::ClearType::All)
 }
 
-/// Returns terminal size.
-pub fn t_size() -> std::io::Result<(usize, usize)> {
-  crossterm::terminal::size().map(|(width, height)| (width as usize, height as usize))
-}
-
 /// Returns enter alternate screen action.
 pub fn t_enter_alternate_screen() -> crossterm::terminal::EnterAlternateScreen {
   crossterm::terminal::EnterAlternateScreen
 }
 
-/// Returns leave alternate screen action.
+/// Returns an action that triggers leaving alternate screen.
 pub fn t_leave_alternate_screen() -> crossterm::terminal::LeaveAlternateScreen {
   crossterm::terminal::LeaveAlternateScreen
+}
+
+/// Returns the size (width, height) of the terminal.
+pub fn t_size() -> std::io::Result<(usize, usize)> {
+  crossterm::terminal::size().map(|(width, height)| (width as usize, height as usize))
 }

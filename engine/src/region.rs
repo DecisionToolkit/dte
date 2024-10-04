@@ -1,6 +1,6 @@
 //! # Region
 //!
-//! Region represents a rectangular space for handling editing operations.
+//! [Region] represents a rectangular region for handling editing operations.
 
 use std::cmp::{max, min};
 use std::fmt;
@@ -8,6 +8,7 @@ use std::fmt::Display;
 
 const MOVE_MARGIN: usize = 1;
 
+/// Rectangular region.
 #[derive(Debug, Default, Copy, Clone, Eq, PartialEq)]
 pub struct Region {
   /// Left coordinate of the region.

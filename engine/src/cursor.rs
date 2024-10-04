@@ -11,7 +11,7 @@ pub enum CursorShape {
   UnderScore,
 }
 
-/// Cursor properties and position.
+/// Cursor position and shape.
 pub struct Cursor {
   /// Cursor shape.
   shape: CursorShape,
@@ -29,6 +29,11 @@ impl Cursor {
   /// Returns the cursor coordinates as a tuple `(column, row)`.
   pub fn get(&self) -> (usize, usize) {
     (self.column, self.row)
+  }
+
+  pub fn set(&mut self, col: usize, row: usize) {
+    self.column = col;
+    self.row = row;
   }
 
   pub fn set_col(&mut self, col: usize) {

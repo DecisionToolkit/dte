@@ -22,7 +22,7 @@
 
 ## Overview
 
-Decision table editor engine.
+Engine for [decision table editor](https://crates.io/crates/dte).
 
 ## Project status
 

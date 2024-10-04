@@ -1,13 +1,11 @@
 //! # Decision table editor
 
 mod editor;
-mod keys;
+mod trigger;
 mod utils;
 
-use crate::editor::Editor;
 use clap::{arg, command, ArgMatches};
-use crossterm::terminal;
-use std::fs;
+use editor::Editor;
 
 /// Returns argument matches for command-line arguments.
 fn get_matches() -> ArgMatches {
@@ -28,13 +26,13 @@ fn main() -> std::io::Result<()> {
   // get the name of the file to be edited
   let file_name = matches.get_one::<String>("INPUT_FILE").unwrap().to_string();
   // read the file content as Unicode string
-  if let Ok(content) = fs::read_to_string(file_name) {
+  if let Ok(content) = std::fs::read_to_string(file_name) {
     // switch the terminal to raw mode, we take the over the full control
-    terminal::enable_raw_mode()?;
+    crossterm::terminal::enable_raw_mode()?;
     // start the editor...
     let _ = start(content);
-    // ... and when the user is done with editing, switch back to normal mode
-    terminal::disable_raw_mode()?;
+    // ...and when user is done with editing, switch back to normal mode
+    crossterm::terminal::disable_raw_mode()?;
   }
   Ok(())
 }
