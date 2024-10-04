@@ -3,12 +3,12 @@
 resolver = "2"
 
 members = [
-    "editor",
-    "engine"
+  "editor",
+  "engine"
 ]
 
 [workspace.package]
-version = "0.0.4"
+version = "0.0.5-dev"
 authors = ["Dariusz Depta <depta@engos.de>"]
 repository = "https://github.com/DecisionToolkit/dte.git"
 license = "MIT OR Apache-2.0"
