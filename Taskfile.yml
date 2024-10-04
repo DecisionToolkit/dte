@@ -38,17 +38,17 @@ tasks:
     cmds:
       - cmd: cargo +nightly clippy --workspace --all-targets
 
-  cov-editor:
-    desc: Generates code coverage report
-    cmds:
-      - task: clean
-      - cmd: ./tarpaulage.sh dte
-
-  cov-engine:
-    desc: Generates code coverage report
+  cov:
+    desc: Generates code coverage report for the engine
     cmds:
       - task: clean
       - cmd: ./tarpaulage.sh dtee
+
+  cov-editor:
+    desc: Generates code coverage report for the whole editor
+    cmds:
+      - task: clean
+      - cmd: ./tarpaulage.sh dte
 
   doc:
     desc: Generates the documentation for the workspace

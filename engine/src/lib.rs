@@ -9,5 +9,7 @@ mod cursor;
 mod model;
 mod region;
 
-pub use controller::Controller;
-pub use region::Region;
+pub use controller::*;
+pub use cursor::*;
+pub use model::*;
+pub use region::*;

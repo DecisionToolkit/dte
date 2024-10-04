@@ -1,10 +1,10 @@
-//! # Editor
+//! # Decision table editor
 
-use crate::keys::{read_key, Key};
+use crate::trigger::{read_trigger, Trigger};
 use crate::utils::*;
 use crossterm::style::{Print, Stylize};
 use crossterm::{execute, queue};
-use dtee::{Controller, Region};
+use dtee::{Controller, Region, SPACE};
 use std::cmp::min;
 use std::io::{Result, Stdout, Write};
 
@@ -14,9 +14,7 @@ const MINIMAL_TERMINAL_WIDTH: usize = 30;
 /// Minimal terminal height before `locking` the screen.
 const MINIMAL_TERMINAL_HEIGHT: usize = 10;
 
-/// Whitespace character used for filling empty regions.
-const WS: char = ' ';
-
+/// Decision table editor.
 pub struct Editor {
   stdout: Stdout,
   controller: Controller,
@@ -40,43 +38,48 @@ impl Editor {
     let (width, height) = self.controller.viewport().size();
     self.action_resize(width, height)?;
     loop {
-      let key = read_key();
-      if matches!(key, Key::CtrlQ) {
+      let key = read_trigger();
+      if matches!(key, Trigger::Exit) {
         break;
       }
       if self.locked {
-        self.process_key_when_locked(key)?;
+        self.process_trigger_when_locked_screen(key)?;
       } else {
-        self.process_key_when_unlocked(key)?;
+        self.process_trigger_when_unlocked_screen(key)?;
       }
     }
     execute!(self.stdout, t_leave_alternate_screen(), c_default_user_shape(), c_show())?;
     Ok(())
   }
 
-  fn process_key_when_locked(&mut self, event: Key) -> Result<()> {
-    if let Key::Resize(width, height) = event {
+  /// Processes a trigger when the screen is locked (too small).
+  fn process_trigger_when_locked_screen(&mut self, trigger: Trigger) -> Result<()> {
+    if let Trigger::Resize(width, height) = trigger {
       self.action_resize(width, height)?
     }
     Ok(())
   }
 
-  fn process_key_when_unlocked(&mut self, event: Key) -> Result<()> {
-    match event {
-      Key::F1 => self.action_show_help()?,
-      Key::Right => self.action_cursor_move_right()?,
-      Key::Left => self.action_cursor_move_left()?,
-      Key::Up => self.action_cursor_move_up()?,
-      Key::Down => self.action_cursor_move_down()?,
-      Key::Home => self.action_cursor_move_cell_start()?,
-      Key::End => self.action_cursor_move_cell_end()?,
-      Key::ShiftHome => self.action_cursor_move_row_start()?,
-      Key::ShiftEnd => self.action_cursor_move_row_end()?,
-      Key::Tab => self.action_cursor_move_cell_next()?,
-      Key::ShiftTab => self.action_cursor_move_cell_prev()?,
-      Key::Insert => self.action_cursor_toggle_bar_block()?,
-      Key::Char(ch) => self.action_write(ch)?,
-      Key::Resize(width, height) => self.action_resize(width, height)?,
+  /// Processes a trigger when the screen is unlocked (normal state).
+  fn process_trigger_when_unlocked_screen(&mut self, trigger: Trigger) -> Result<()> {
+    match trigger {
+      Trigger::Backspace => self.action_delete(true)?,
+      Trigger::Char(ch) => self.action_insert_char(ch)?,
+      Trigger::Delete => self.action_delete(false)?,
+      Trigger::Down => self.action_cursor_move_down()?,
+      Trigger::End => self.action_cursor_move_cell_end()?,
+      Trigger::Enter => self.action_split_line()?,
+      Trigger::F1 => self.action_show_help()?,
+      Trigger::Home => self.action_cursor_move_cell_start()?,
+      Trigger::Insert => self.action_cursor_toggle_bar_block()?,
+      Trigger::Left => self.action_cursor_move_left()?,
+      Trigger::Resize(width, height) => self.action_resize(width, height)?,
+      Trigger::Right => self.action_cursor_move_right()?,
+      Trigger::ShiftEnd => self.action_cursor_move_row_end()?,
+      Trigger::ShiftHome => self.action_cursor_move_row_start()?,
+      Trigger::ShiftTab => self.action_cursor_move_cell_prev()?,
+      Trigger::Tab => self.action_cursor_move_cell_next()?,
+      Trigger::Up => self.action_cursor_move_up()?,
       _ => {}
     };
     Ok(())
@@ -154,17 +157,25 @@ impl Editor {
     Ok(())
   }
 
+  fn action_delete(&mut self, backspace: bool) -> Result<()> {
+    if backspace {
+      self.controller.delete_char_before_cursor();
+    } else {
+      self.controller.delete_char_under_cursor();
+    }
+    self.repaint_all()?;
+    self.update_cursor_position()?;
+    Ok(())
+  }
+
   fn action_resize(&mut self, new_width: usize, new_height: usize) -> Result<()> {
-    let dirties = self.controller.resize(new_width, new_height);
     if new_width < MINIMAL_TERMINAL_WIDTH || new_height < MINIMAL_TERMINAL_HEIGHT {
-      execute!(self.stdout, c_hide(), t_clear_all(), c_move(0, 0), Print(" 🍋 I'm squeezed!".yellow().bold()))?;
+      execute!(self.stdout, c_hide(), t_clear_all(), c_move(0, 0), Print(" I'm squeezed! 🍋".yellow().bold()))?;
       self.locked = true;
     } else {
+      self.repaint_all()?;
       if self.locked {
-        self.repaint_all()?;
         execute!(self.stdout, c_show())?;
-      } else {
-        self.repaint(&dirties)?;
       }
       let (col, row) = self.controller.cursor_position();
       let (left, top) = self.controller.viewport().offset();
@@ -174,8 +185,18 @@ impl Editor {
     Ok(())
   }
 
-  fn action_write(&mut self, ch: char) -> Result<()> {
-    self.controller.write_char(ch);
+  fn action_insert_char(&mut self, ch: char) -> Result<()> {
+    self.controller.insert_char(ch);
+    self.repaint_all()?;
+    self.update_cursor_position()?;
+    Ok(())
+  }
+
+  /// Splits the line at the cursor position.
+  fn action_split_line(&mut self) -> Result<()> {
+    self.controller.split_line();
+    self.repaint_all()?;
+    self.update_cursor_position()?;
     Ok(())
   }
 
@@ -188,6 +209,7 @@ impl Editor {
       for region in regions {
         let (left, top) = region.offset();
         let (width, height) = region.size();
+        let mut last_row_index = 0;
         for (row_index, row) in self.controller.content().iter().skip(top).take(height).enumerate() {
           let mut last_column_index = 0;
           for (col_index, ch) in row.iter().skip(left).take(width).enumerate() {
@@ -196,11 +218,17 @@ impl Editor {
             let y = top.saturating_add(row_index).saturating_sub(offset_top);
             queue!(self.stdout, c_move(x, y), Print(ch))?;
           }
-          for col_index in last_column_index + 1..min(width, text_width) {
+          for col_index in last_column_index + 1..min(width, text_width + 1) {
+            // trick with additional space to clear lines while shrinking width ---^^
             let x = left.saturating_add(col_index).saturating_sub(offset_left);
             let y = top.saturating_add(row_index).saturating_sub(offset_top);
-            queue!(self.stdout, c_move(x, y), Print(WS))?;
+            queue!(self.stdout, c_move(x, y), Print(SPACE))?;
           }
+          last_row_index += 1;
+        }
+        // trick with additional row to clear lines while shrinking height
+        for x in 0..min(width, text_width + 1) {
+          queue!(self.stdout, c_move(x, last_row_index), Print(SPACE))?;
         }
       }
       queue!(self.stdout, c_show())?;
@@ -211,7 +239,7 @@ impl Editor {
 
   /// Repaints the whole viewport.
   fn repaint_all(&mut self) -> Result<()> {
-    self.repaint(&[*self.controller.viewport()])
+    self.repaint(&[self.controller.viewport()])
   }
 
   fn cursor_move(&mut self, repaint: Option<bool>) -> Result<()> {
@@ -225,8 +253,8 @@ impl Editor {
   }
 
   fn update_cursor_position(&mut self) -> Result<()> {
-    let (col, row) = self.controller.cursor_position();
-    let (left, top) = self.controller.viewport().offset();
-    execute!(self.stdout, c_move(col.saturating_sub(left), row.saturating_sub(top)))
+    let (col_index, row_index) = self.controller.cursor_position();
+    let (offset_left, offset_top) = self.controller.viewport().offset();
+    execute!(self.stdout, c_move(col_index.saturating_sub(offset_left), row_index.saturating_sub(offset_top)))
   }
 }

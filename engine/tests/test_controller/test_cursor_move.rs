@@ -25,7 +25,7 @@
 //! To try all these test cases in "real-life" just run `task run2`
 //! and follow the movements from test cases.
 
-use crate::test_files::INPUT_0002;
+use super::*;
 use dtee::Controller;
 
 const WIDTH: usize = 800;
@@ -847,8 +847,43 @@ fn _0026() {
   });
 }
 
-//TODO cell next/prev special cases
-//TODO move right/left special cases
+/// Cursor is placed right before the vertical line.
+/// Moving to the next cell should work.
+#[test]
+
+fn _0027() {
+  let mut controller = Controller::new(INPUT_0002, WIDTH, HEIGHT);
+  assert_eq!((1, 1), controller.cursor_position());
+  actions(&mut controller, &[MoveDown(1), MoveRight(3)]);
+  assert_eq!((4, 3), controller.cursor_position());
+  actions(&mut controller, &[CellNext(1)]);
+  assert_eq!((5, 3), controller.cursor_position());
+}
+
+/// Cursor is placed right after the vertical line.
+/// Moving to the previous cell should work.
+#[test]
+fn _0028() {
+  let mut controller = Controller::new(INPUT_0002, WIDTH, HEIGHT);
+  actions(
+    &mut controller,
+    &[AssertPos(1, 1), MoveDown(1), MoveRight(4), AssertPos(5, 3), CellPrev(1), AssertPos(4, 3)],
+  );
+}
+
+/// Moving to the end of the cell and returning to the cell start should work.
+#[test]
+fn _0029() {
+  let mut controller = Controller::new(INPUT_0002, WIDTH, HEIGHT);
+  actions(&mut controller, &[AssertPos(1, 1), CellEnd(1), AssertPos(18, 1), CellStart(1), AssertPos(1, 1)]);
+}
+
+/// Moving to the end of the row and returning to the row start should work.
+#[test]
+fn _0030() {
+  let mut controller = Controller::new(INPUT_0002, WIDTH, HEIGHT);
+  actions(&mut controller, &[MoveDown(1), AssertPos(1, 3), RowEnd(1), AssertPos(72, 3), RowStart(1), AssertPos(1, 3)]);
+}
 
 #[test]
 fn cursor_toggle_should_work() {
