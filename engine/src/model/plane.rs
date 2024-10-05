@@ -21,11 +21,11 @@ fn join_index(content: &[Row]) -> Option<usize> {
   let left_top = content.first().and_then(|row| row.first().map(|chr| chr.char()))?;
   if left_top == LIGHT_DOWN_AND_RIGHT {
     let right_top = content.first().and_then(|row| row.last().map(|chr| chr.char()))?;
-    if right_top == '┐' {
+    if right_top == LIGHT_DOWN_AND_LEFT {
       let col_index = content.first().unwrap().len() - 1;
       for (index, row) in content.iter().enumerate() {
         if let Some(chr) = row.get(col_index) {
-          if chr.char() == LIGHT_UP_AND_HORIZONTAL || chr.char() == '┼' || chr.char() == '╫' {
+          if chr.char() == LIGHT_UP_AND_HORIZONTAL || chr.char() == LIGHT_VERTICAL_AND_HORIZONTAL || chr.char() == VERTICAL_DOUBLE_AND_HORIZONTAL_SINGLE {
             return Some(index);
           }
         }
@@ -669,9 +669,9 @@ impl Plane {
             if upper_chr.is_single_vert_line() {
               match chr.char() {
                 LIGHT_HORIZONTAL => chr.set_char(LIGHT_UP_AND_HORIZONTAL),
-                LIGHT_DOWN_AND_HORIZONTAL => chr.set_char('┼'),
-                '┐' => chr.set_char('┤'),
-                '╥' => chr.set_char('╫'),
+                LIGHT_DOWN_AND_HORIZONTAL => chr.set_char(LIGHT_VERTICAL_AND_HORIZONTAL),
+                LIGHT_DOWN_AND_LEFT => chr.set_char(LIGHT_VERTICAL_AND_LEFT),
+                DOWN_DOUBLE_AND_HORIZONTAL_SINGLE => chr.set_char(VERTICAL_DOUBLE_AND_HORIZONTAL_SINGLE),
                 _ => {}
               }
               continue; // <--- DO NOT OVERSEE THIS WHEN ANALYSING THE CODE
@@ -679,9 +679,9 @@ impl Plane {
           }
           match chr.char() {
             LIGHT_UP_AND_HORIZONTAL => chr.set_char(LIGHT_HORIZONTAL),
-            '┼' => chr.set_char(LIGHT_DOWN_AND_HORIZONTAL),
-            '┤' => chr.set_char('┐'),
-            '╫' => chr.set_char('╥'),
+            LIGHT_VERTICAL_AND_HORIZONTAL => chr.set_char(LIGHT_DOWN_AND_HORIZONTAL),
+            LIGHT_VERTICAL_AND_LEFT => chr.set_char(LIGHT_DOWN_AND_LEFT),
+            VERTICAL_DOUBLE_AND_HORIZONTAL_SINGLE => chr.set_char(DOWN_DOUBLE_AND_HORIZONTAL_SINGLE),
             _ => {}
           }
           // <-- do not place any code here, because of `continue` several lines above

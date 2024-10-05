@@ -36,6 +36,46 @@ pub const LIGHT_VERTICAL: char = '\u{2502}';
 /// ```
 pub const LIGHT_DOWN_AND_RIGHT: char = '\u{250C}';
 
+/// `┐` `U+2510` Box drawings light down and left.
+/// ```
+/// # use dtee::*;
+/// assert_eq!('┐', LIGHT_DOWN_AND_LEFT);
+/// assert_eq!('\u{2510}', LIGHT_DOWN_AND_LEFT);
+/// ```
+pub const LIGHT_DOWN_AND_LEFT: char = '\u{2510}';
+
+/// `└` `U+2514` Box drawings light up and right.
+/// ```
+/// # use dtee::*;
+/// assert_eq!('└', LIGHT_UP_AND_RIGHT);
+/// assert_eq!('\u{2514}', LIGHT_UP_AND_RIGHT);
+/// ```
+pub const LIGHT_UP_AND_RIGHT: char = '\u{2514}';
+
+/// `┘` `U+2514` Box drawings light up and left.
+/// ```
+/// # use dtee::*;
+/// assert_eq!('┘', LIGHT_UP_AND_LEFT);
+/// assert_eq!('\u{2518}', LIGHT_UP_AND_LEFT);
+/// ```
+pub const LIGHT_UP_AND_LEFT: char = '\u{2518}';
+
+/// `├` `U+251C` Box drawings light vertical and right.
+/// ```
+/// # use dtee::*;
+/// assert_eq!('├', LIGHT_VERTICAL_AND_RIGHT);
+/// assert_eq!('\u{251C}', LIGHT_VERTICAL_AND_RIGHT);
+/// ```
+pub const LIGHT_VERTICAL_AND_RIGHT: char = '\u{251C}';
+
+/// `┤` `U+2524` Box drawings light vertical and left.
+/// ```
+/// # use dtee::*;
+/// assert_eq!('┤', LIGHT_VERTICAL_AND_LEFT);
+/// assert_eq!('\u{2524}', LIGHT_VERTICAL_AND_LEFT);
+/// ```
+pub const LIGHT_VERTICAL_AND_LEFT: char = '\u{2524}';
+
 /// `┬` `U+252C` Box drawings light down and horizontal.
 /// ```
 /// # use dtee::*;
@@ -52,6 +92,14 @@ pub const LIGHT_DOWN_AND_HORIZONTAL: char = '\u{252C}';
 /// ```
 pub const LIGHT_UP_AND_HORIZONTAL: char = '\u{2534}';
 
+/// `┼` `U+253C` Box drawings light vertical and horizontal.
+/// ```
+/// # use dtee::*;
+/// assert_eq!('┼', LIGHT_VERTICAL_AND_HORIZONTAL);
+/// assert_eq!('\u{253C}', LIGHT_VERTICAL_AND_HORIZONTAL);
+/// ```
+pub const LIGHT_VERTICAL_AND_HORIZONTAL: char = '\u{253C}';
+
 /// `═` `U+2550` Box drawings double horizontal.
 /// ```
 /// # use dtee::*;
@@ -67,6 +115,94 @@ pub const DOUBLE_HORIZONTAL: char = '\u{2550}';
 /// assert_eq!('\u{2551}', DOUBLE_VERTICAL);
 /// ```
 pub const DOUBLE_VERTICAL: char = '\u{2551}';
+
+/// `╞` `U+255E` Box drawings vertical single and right double.
+/// ```
+/// # use dtee::*;
+/// assert_eq!('╞', VERTICAL_SINGLE_AND_RIGHT_DOUBLE);
+/// assert_eq!('\u{255E}', VERTICAL_SINGLE_AND_RIGHT_DOUBLE);
+/// ```
+pub const VERTICAL_SINGLE_AND_RIGHT_DOUBLE: char = '\u{255E}';
+
+/// `╟` `U+255F` Box drawings vertical double and right single.
+/// ```
+/// # use dtee::*;
+/// assert_eq!('╟', VERTICAL_DOUBLE_AND_RIGHT_SINGLE);
+/// assert_eq!('\u{255F}', VERTICAL_DOUBLE_AND_RIGHT_SINGLE);
+/// ```
+pub const VERTICAL_DOUBLE_AND_RIGHT_SINGLE: char = '\u{255F}';
+
+/// `╡` `U+2561` Box drawings vertical single and left double.
+/// ```
+/// # use dtee::*;
+/// assert_eq!('╡', VERTICAL_SINGLE_AND_LEFT_DOUBLE);
+/// assert_eq!('\u{2561}', VERTICAL_SINGLE_AND_LEFT_DOUBLE);
+/// ```
+pub const VERTICAL_SINGLE_AND_LEFT_DOUBLE: char = '\u{2561}';
+
+/// `╢` `U+2562` Box drawings vertical double and left single.
+/// ```
+/// # use dtee::*;
+/// assert_eq!('╢', VERTICAL_DOUBLE_AND_LEFT_SINGLE);
+/// assert_eq!('\u{2562}', VERTICAL_DOUBLE_AND_LEFT_SINGLE);
+/// ```
+pub const VERTICAL_DOUBLE_AND_LEFT_SINGLE: char = '\u{2562}';
+
+/// `╤` `U+2564` Box drawings down single and horizontal double.
+/// ```
+/// # use dtee::*;
+/// assert_eq!('╤', DOWN_SINGLE_AND_HORIZONTAL_DOUBLE);
+/// assert_eq!('\u{2564}', DOWN_SINGLE_AND_HORIZONTAL_DOUBLE);
+/// ```
+pub const DOWN_SINGLE_AND_HORIZONTAL_DOUBLE: char = '\u{2564}';
+
+/// `╥` `U+2565` Box drawings down double and horizontal single.
+/// ```
+/// # use dtee::*;
+/// assert_eq!('╥', DOWN_DOUBLE_AND_HORIZONTAL_SINGLE);
+/// assert_eq!('\u{2565}', DOWN_DOUBLE_AND_HORIZONTAL_SINGLE);
+/// ```
+pub const DOWN_DOUBLE_AND_HORIZONTAL_SINGLE: char = '\u{2565}';
+
+/// `╧` `U+2567` Box drawings up single and horizontal double.
+/// ```
+/// # use dtee::*;
+/// assert_eq!('╧', UP_SINGLE_AND_HORIZONTAL_DOUBLE);
+/// assert_eq!('\u{2567}', UP_SINGLE_AND_HORIZONTAL_DOUBLE);
+/// ```
+pub const UP_SINGLE_AND_HORIZONTAL_DOUBLE: char = '\u{2567}';
+
+/// `╨` `U+2568` Box drawings up double and horizontal single.
+/// ```
+/// # use dtee::*;
+/// assert_eq!('╨', UP_DOUBLE_AND_HORIZONTAL_SINGLE);
+/// assert_eq!('\u{2568}', UP_DOUBLE_AND_HORIZONTAL_SINGLE);
+/// ```
+pub const UP_DOUBLE_AND_HORIZONTAL_SINGLE: char = '\u{2568}';
+
+/// `╪` `U+256A` Box drawings vertical single and horizontal double.
+/// ```
+/// # use dtee::*;
+/// assert_eq!('╪', VERTICAL_SINGLE_AND_HORIZONTAL_DOUBLE);
+/// assert_eq!('\u{256A}', VERTICAL_SINGLE_AND_HORIZONTAL_DOUBLE);
+/// ```
+pub const VERTICAL_SINGLE_AND_HORIZONTAL_DOUBLE: char = '\u{256A}';
+
+/// `╫` `U+256B` Box drawings vertical double and horizontal single.
+/// ```
+/// # use dtee::*;
+/// assert_eq!('╫', VERTICAL_DOUBLE_AND_HORIZONTAL_SINGLE);
+/// assert_eq!('\u{256B}', VERTICAL_DOUBLE_AND_HORIZONTAL_SINGLE);
+/// ```
+pub const VERTICAL_DOUBLE_AND_HORIZONTAL_SINGLE: char = '\u{256B}';
+
+/// `╬` `U+256C` Box drawings double vertical and horizontal.
+/// ```
+/// # use dtee::*;
+/// assert_eq!('╬', DOUBLE_VERTICAL_AND_HORIZONTAL);
+/// assert_eq!('\u{256C}', DOUBLE_VERTICAL_AND_HORIZONTAL);
+/// ```
+pub const DOUBLE_VERTICAL_AND_HORIZONTAL: char = '\u{256C}';
 
 /// Flag for clearing all attributes of the character.
 pub const ATTRIBUTE_CLEAR: u8 = 0x0;
@@ -203,27 +339,27 @@ impl Char {
     matches!(
       *self.ch.borrow(),
       LIGHT_DOWN_AND_RIGHT
-        | '┐'
-        | '└'
-        | '┘'
+        | LIGHT_DOWN_AND_LEFT
+        | LIGHT_UP_AND_RIGHT
+        | LIGHT_UP_AND_LEFT
         | LIGHT_HORIZONTAL
         | LIGHT_VERTICAL
-        | '├'
-        | '┤'
+        | LIGHT_VERTICAL_AND_RIGHT
+        | LIGHT_VERTICAL_AND_LEFT
         | LIGHT_UP_AND_HORIZONTAL
         | LIGHT_DOWN_AND_HORIZONTAL
-        | '┼'
-        | '╪'
-        | '╫'
-        | '╬'
-        | '╞'
-        | '╡'
-        | '╥'
-        | '╨'
+        | LIGHT_VERTICAL_AND_HORIZONTAL
+        | VERTICAL_SINGLE_AND_HORIZONTAL_DOUBLE
+        | VERTICAL_DOUBLE_AND_HORIZONTAL_SINGLE
+        | DOUBLE_VERTICAL_AND_HORIZONTAL
+        | VERTICAL_SINGLE_AND_RIGHT_DOUBLE
+        | VERTICAL_SINGLE_AND_LEFT_DOUBLE
+        | DOWN_DOUBLE_AND_HORIZONTAL_SINGLE
+        | UP_DOUBLE_AND_HORIZONTAL_SINGLE
         | DOUBLE_HORIZONTAL
         | DOUBLE_VERTICAL
-        | '╟'
-        | '╢'
+        | VERTICAL_DOUBLE_AND_RIGHT_SINGLE
+        | VERTICAL_DOUBLE_AND_LEFT_SINGLE
     )
   }
 
@@ -231,26 +367,26 @@ impl Char {
   pub fn is_crossing(&self) -> bool {
     matches!(
       *self.ch.borrow(),
-      '┼'
+      LIGHT_VERTICAL_AND_HORIZONTAL
         | LIGHT_DOWN_AND_HORIZONTAL
         | LIGHT_UP_AND_HORIZONTAL
-        | '╪'
+        | VERTICAL_SINGLE_AND_HORIZONTAL_DOUBLE
         | LIGHT_DOWN_AND_RIGHT
-        | '┐'
-        | '└'
-        | '┘'
-        | '├'
-        | '┤'
-        | '╟'
-        | '╢'
-        | '╬'
-        | '╥'
-        | '╨'
-        | '╫'
-        | '╡'
-        | '╞'
-        | '╧'
-        | '╤'
+        | LIGHT_DOWN_AND_LEFT
+        | LIGHT_UP_AND_RIGHT
+        | LIGHT_UP_AND_LEFT
+        | LIGHT_VERTICAL_AND_RIGHT
+        | LIGHT_VERTICAL_AND_LEFT
+        | VERTICAL_DOUBLE_AND_RIGHT_SINGLE
+        | VERTICAL_DOUBLE_AND_LEFT_SINGLE
+        | DOUBLE_VERTICAL_AND_HORIZONTAL
+        | DOWN_DOUBLE_AND_HORIZONTAL_SINGLE
+        | UP_DOUBLE_AND_HORIZONTAL_SINGLE
+        | VERTICAL_DOUBLE_AND_HORIZONTAL_SINGLE
+        | VERTICAL_SINGLE_AND_LEFT_DOUBLE
+        | VERTICAL_SINGLE_AND_RIGHT_DOUBLE
+        | UP_SINGLE_AND_HORIZONTAL_DOUBLE
+        | DOWN_SINGLE_AND_HORIZONTAL_DOUBLE
     )
   }
 
@@ -275,12 +411,28 @@ impl Char {
   pub fn is_single_vert_line_crossing_left(&self) -> bool {
     matches!(
       *self.ch.borrow(),
-      '┼' | LIGHT_DOWN_AND_HORIZONTAL | LIGHT_UP_AND_HORIZONTAL | '┐' | '┘' | '┤' | '╥' | '╨' | '╫' | '╢'
+      LIGHT_VERTICAL_AND_HORIZONTAL
+        | LIGHT_DOWN_AND_HORIZONTAL
+        | LIGHT_UP_AND_HORIZONTAL
+        | LIGHT_DOWN_AND_LEFT
+        | LIGHT_UP_AND_LEFT
+        | LIGHT_VERTICAL_AND_LEFT
+        | DOWN_DOUBLE_AND_HORIZONTAL_SINGLE
+        | UP_DOUBLE_AND_HORIZONTAL_SINGLE
+        | VERTICAL_DOUBLE_AND_HORIZONTAL_SINGLE
+        | VERTICAL_DOUBLE_AND_LEFT_SINGLE
     )
   }
 
   pub fn is_double_vert_line_crossing_left(&self) -> bool {
-    matches!(*self.ch.borrow(), '╪' | '╬' | '╡' | '╤' | '╧')
+    matches!(
+      *self.ch.borrow(),
+      VERTICAL_SINGLE_AND_HORIZONTAL_DOUBLE
+        | DOUBLE_VERTICAL_AND_HORIZONTAL
+        | VERTICAL_SINGLE_AND_LEFT_DOUBLE
+        | DOWN_SINGLE_AND_HORIZONTAL_DOUBLE
+        | UP_SINGLE_AND_HORIZONTAL_DOUBLE
+    )
   }
 
   pub fn is_vert_line_crossing_left(&self) -> bool {
@@ -303,7 +455,10 @@ impl Char {
   /// assert_eq!(false, Char::from('╢').is_vert_line_left());
   /// ```
   pub fn is_vert_line_left(&self) -> bool {
-    matches!(*self.ch.borrow(), LIGHT_VERTICAL | '├' | DOUBLE_VERTICAL | '╟')
+    matches!(
+      *self.ch.borrow(),
+      LIGHT_VERTICAL | LIGHT_VERTICAL_AND_RIGHT | DOUBLE_VERTICAL | VERTICAL_DOUBLE_AND_RIGHT_SINGLE
+    )
   }
 
   /// Checks whether the specified character is a `right vertical line`,
@@ -322,7 +477,10 @@ impl Char {
   /// assert_eq!(false, Char::from('╟').is_vert_line_right());
   /// ```
   pub fn is_vert_line_right(&self) -> bool {
-    matches!(*self.ch.borrow(), LIGHT_VERTICAL | '┤' | DOUBLE_VERTICAL | '╢')
+    matches!(
+      *self.ch.borrow(),
+      LIGHT_VERTICAL | LIGHT_VERTICAL_AND_LEFT | DOUBLE_VERTICAL | VERTICAL_DOUBLE_AND_LEFT_SINGLE
+    )
   }
 
   /// Checks whether the specified character is a horizontal line (single or double).
