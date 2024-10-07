@@ -12,7 +12,8 @@ use std::fmt::Display;
 /// ```
 pub const SPACE: char = '\u{0020}';
 
-/// `─` `U+2500` Box drawings light horizontal.
+/// `─` `U+2500` Box drawings light horizontal.+
+///
 /// ```
 /// # use dtee::*;
 /// assert_eq!('─', LIGHT_HORIZONTAL);
@@ -334,76 +335,170 @@ impl Char {
     *self.attributes.borrow_mut() &= !ATTRIBUTE_FULL_JOIN;
   }
 
-  /// Checks whether the specified character is a box-drawing character.
+  /// Checks whether the character is a box-drawing character.
+  ///
+  /// # Examples
+  ///
+  /// ```
+  /// # use dtee::*;
+  /// assert_eq!(true, Char::from(LIGHT_HORIZONTAL).is_frame());
+  /// assert_eq!(true, Char::from(LIGHT_VERTICAL).is_frame());
+  /// assert_eq!(true, Char::from(LIGHT_DOWN_AND_RIGHT).is_frame());
+  /// assert_eq!(true, Char::from(LIGHT_DOWN_AND_LEFT).is_frame());
+  /// assert_eq!(true, Char::from(LIGHT_UP_AND_RIGHT).is_frame());
+  /// assert_eq!(true, Char::from(LIGHT_UP_AND_LEFT).is_frame());
+  /// assert_eq!(true, Char::from(LIGHT_VERTICAL_AND_RIGHT).is_frame());
+  /// assert_eq!(true, Char::from(LIGHT_VERTICAL_AND_LEFT).is_frame());
+  /// assert_eq!(true, Char::from(LIGHT_DOWN_AND_HORIZONTAL).is_frame());
+  /// assert_eq!(true, Char::from(LIGHT_UP_AND_HORIZONTAL).is_frame());
+  /// assert_eq!(true, Char::from(LIGHT_VERTICAL_AND_HORIZONTAL).is_frame());
+  /// assert_eq!(true, Char::from(DOUBLE_HORIZONTAL).is_frame());
+  /// assert_eq!(true, Char::from(DOUBLE_VERTICAL).is_frame());
+  /// assert_eq!(true, Char::from(VERTICAL_SINGLE_AND_RIGHT_DOUBLE).is_frame());
+  /// assert_eq!(true, Char::from(VERTICAL_DOUBLE_AND_RIGHT_SINGLE).is_frame());
+  /// assert_eq!(true, Char::from(VERTICAL_SINGLE_AND_LEFT_DOUBLE).is_frame());
+  /// assert_eq!(true, Char::from(VERTICAL_DOUBLE_AND_LEFT_SINGLE).is_frame());
+  /// assert_eq!(true, Char::from(DOWN_SINGLE_AND_HORIZONTAL_DOUBLE).is_frame());
+  /// assert_eq!(true, Char::from(DOWN_DOUBLE_AND_HORIZONTAL_SINGLE).is_frame());
+  /// assert_eq!(true, Char::from(UP_SINGLE_AND_HORIZONTAL_DOUBLE).is_frame());
+  /// assert_eq!(true, Char::from(UP_DOUBLE_AND_HORIZONTAL_SINGLE).is_frame());
+  /// assert_eq!(true, Char::from(VERTICAL_SINGLE_AND_HORIZONTAL_DOUBLE).is_frame());
+  /// assert_eq!(true, Char::from(VERTICAL_DOUBLE_AND_HORIZONTAL_SINGLE).is_frame());
+  /// assert_eq!(true, Char::from(DOUBLE_VERTICAL_AND_HORIZONTAL).is_frame());
+  /// ```
   pub fn is_frame(&self) -> bool {
     matches!(
       *self.ch.borrow(),
-      LIGHT_DOWN_AND_RIGHT
-        | LIGHT_DOWN_AND_LEFT
-        | LIGHT_UP_AND_RIGHT
-        | LIGHT_UP_AND_LEFT
-        | LIGHT_HORIZONTAL
+      LIGHT_HORIZONTAL
         | LIGHT_VERTICAL
-        | LIGHT_VERTICAL_AND_RIGHT
-        | LIGHT_VERTICAL_AND_LEFT
-        | LIGHT_UP_AND_HORIZONTAL
-        | LIGHT_DOWN_AND_HORIZONTAL
-        | LIGHT_VERTICAL_AND_HORIZONTAL
-        | VERTICAL_SINGLE_AND_HORIZONTAL_DOUBLE
-        | VERTICAL_DOUBLE_AND_HORIZONTAL_SINGLE
-        | DOUBLE_VERTICAL_AND_HORIZONTAL
-        | VERTICAL_SINGLE_AND_RIGHT_DOUBLE
-        | VERTICAL_SINGLE_AND_LEFT_DOUBLE
-        | DOWN_DOUBLE_AND_HORIZONTAL_SINGLE
-        | UP_DOUBLE_AND_HORIZONTAL_SINGLE
-        | DOUBLE_HORIZONTAL
-        | DOUBLE_VERTICAL
-        | VERTICAL_DOUBLE_AND_RIGHT_SINGLE
-        | VERTICAL_DOUBLE_AND_LEFT_SINGLE
-    )
-  }
-
-  /// Checks whether the specified character is crossing.
-  pub fn is_crossing(&self) -> bool {
-    matches!(
-      *self.ch.borrow(),
-      LIGHT_VERTICAL_AND_HORIZONTAL
-        | LIGHT_DOWN_AND_HORIZONTAL
-        | LIGHT_UP_AND_HORIZONTAL
-        | VERTICAL_SINGLE_AND_HORIZONTAL_DOUBLE
         | LIGHT_DOWN_AND_RIGHT
         | LIGHT_DOWN_AND_LEFT
         | LIGHT_UP_AND_RIGHT
         | LIGHT_UP_AND_LEFT
         | LIGHT_VERTICAL_AND_RIGHT
         | LIGHT_VERTICAL_AND_LEFT
-        | VERTICAL_DOUBLE_AND_RIGHT_SINGLE
-        | VERTICAL_DOUBLE_AND_LEFT_SINGLE
-        | DOUBLE_VERTICAL_AND_HORIZONTAL
-        | DOWN_DOUBLE_AND_HORIZONTAL_SINGLE
-        | UP_DOUBLE_AND_HORIZONTAL_SINGLE
-        | VERTICAL_DOUBLE_AND_HORIZONTAL_SINGLE
-        | VERTICAL_SINGLE_AND_LEFT_DOUBLE
+        | LIGHT_DOWN_AND_HORIZONTAL
+        | LIGHT_UP_AND_HORIZONTAL
+        | LIGHT_VERTICAL_AND_HORIZONTAL
+        | DOUBLE_HORIZONTAL
+        | DOUBLE_VERTICAL
         | VERTICAL_SINGLE_AND_RIGHT_DOUBLE
-        | UP_SINGLE_AND_HORIZONTAL_DOUBLE
+        | VERTICAL_DOUBLE_AND_RIGHT_SINGLE
+        | VERTICAL_SINGLE_AND_LEFT_DOUBLE
+        | VERTICAL_DOUBLE_AND_LEFT_SINGLE
         | DOWN_SINGLE_AND_HORIZONTAL_DOUBLE
+        | DOWN_DOUBLE_AND_HORIZONTAL_SINGLE
+        | UP_SINGLE_AND_HORIZONTAL_DOUBLE
+        | UP_DOUBLE_AND_HORIZONTAL_SINGLE
+        | VERTICAL_SINGLE_AND_HORIZONTAL_DOUBLE
+        | VERTICAL_DOUBLE_AND_HORIZONTAL_SINGLE
+        | DOUBLE_VERTICAL_AND_HORIZONTAL
     )
   }
 
-  /// Checks whether the specified character is a vertical line (single or double).
+  /// Checks whether the character is a crossing.
+  ///
+  /// # Examples
+  ///
+  /// ```
+  /// # use dtee::*;
+  /// assert_eq!(true, Char::from(LIGHT_DOWN_AND_RIGHT).is_crossing());
+  /// assert_eq!(true, Char::from(LIGHT_DOWN_AND_LEFT).is_crossing());
+  /// assert_eq!(true, Char::from(LIGHT_UP_AND_RIGHT).is_crossing());
+  /// assert_eq!(true, Char::from(LIGHT_UP_AND_LEFT).is_crossing());
+  /// assert_eq!(true, Char::from(LIGHT_VERTICAL_AND_RIGHT).is_crossing());
+  /// assert_eq!(true, Char::from(LIGHT_VERTICAL_AND_LEFT).is_crossing());
+  /// assert_eq!(true, Char::from(LIGHT_DOWN_AND_HORIZONTAL).is_crossing());
+  /// assert_eq!(true, Char::from(LIGHT_UP_AND_HORIZONTAL).is_crossing());
+  /// assert_eq!(true, Char::from(LIGHT_VERTICAL_AND_HORIZONTAL).is_crossing());
+  /// assert_eq!(true, Char::from(VERTICAL_SINGLE_AND_RIGHT_DOUBLE).is_crossing());
+  /// assert_eq!(true, Char::from(VERTICAL_DOUBLE_AND_RIGHT_SINGLE).is_crossing());
+  /// assert_eq!(true, Char::from(VERTICAL_SINGLE_AND_LEFT_DOUBLE).is_crossing());
+  /// assert_eq!(true, Char::from(VERTICAL_DOUBLE_AND_LEFT_SINGLE).is_crossing());
+  /// assert_eq!(true, Char::from(DOWN_SINGLE_AND_HORIZONTAL_DOUBLE).is_crossing());
+  /// assert_eq!(true, Char::from(DOWN_DOUBLE_AND_HORIZONTAL_SINGLE).is_crossing());
+  /// assert_eq!(true, Char::from(UP_SINGLE_AND_HORIZONTAL_DOUBLE).is_crossing());
+  /// assert_eq!(true, Char::from(UP_DOUBLE_AND_HORIZONTAL_SINGLE).is_crossing());
+  /// assert_eq!(true, Char::from(VERTICAL_SINGLE_AND_HORIZONTAL_DOUBLE).is_crossing());
+  /// assert_eq!(true, Char::from(VERTICAL_DOUBLE_AND_HORIZONTAL_SINGLE).is_crossing());
+  /// assert_eq!(true, Char::from(DOUBLE_VERTICAL_AND_HORIZONTAL).is_crossing());
+  ///
+  /// assert_eq!(false, Char::from(LIGHT_HORIZONTAL).is_crossing());
+  /// assert_eq!(false, Char::from(LIGHT_VERTICAL).is_crossing());
+  /// assert_eq!(false, Char::from(DOUBLE_HORIZONTAL).is_crossing());
+  /// assert_eq!(false, Char::from(DOUBLE_VERTICAL).is_crossing());
+  /// ```
+  pub fn is_crossing(&self) -> bool {
+    matches!(
+      *self.ch.borrow(),
+      LIGHT_DOWN_AND_RIGHT
+        | LIGHT_DOWN_AND_LEFT
+        | LIGHT_UP_AND_RIGHT
+        | LIGHT_UP_AND_LEFT
+        | LIGHT_VERTICAL_AND_RIGHT
+        | LIGHT_VERTICAL_AND_LEFT
+        | LIGHT_DOWN_AND_HORIZONTAL
+        | LIGHT_UP_AND_HORIZONTAL
+        | LIGHT_VERTICAL_AND_HORIZONTAL
+        | VERTICAL_SINGLE_AND_RIGHT_DOUBLE
+        | VERTICAL_DOUBLE_AND_RIGHT_SINGLE
+        | VERTICAL_SINGLE_AND_LEFT_DOUBLE
+        | VERTICAL_DOUBLE_AND_LEFT_SINGLE
+        | DOWN_SINGLE_AND_HORIZONTAL_DOUBLE
+        | DOWN_DOUBLE_AND_HORIZONTAL_SINGLE
+        | UP_SINGLE_AND_HORIZONTAL_DOUBLE
+        | UP_DOUBLE_AND_HORIZONTAL_SINGLE
+        | VERTICAL_SINGLE_AND_HORIZONTAL_DOUBLE
+        | VERTICAL_DOUBLE_AND_HORIZONTAL_SINGLE
+        | DOUBLE_VERTICAL_AND_HORIZONTAL
+    )
+  }
+
+  /// Checks whether the character is a vertical line (single or double).
+  ///
+  /// # Examples
+  ///
+  /// ```
+  /// # use dtee::Char;
+  /// assert_eq!(true, Char::from('│').is_vert_line());
+  /// assert_eq!(true, Char::from('║').is_vert_line());
+  ///
+  /// assert_eq!(false, Char::from('─').is_vert_line());
+  /// assert_eq!(false, Char::from('═').is_vert_line());
+  /// ```
   pub fn is_vert_line(&self) -> bool {
     matches!(*self.ch.borrow(), LIGHT_VERTICAL | DOUBLE_VERTICAL)
   }
 
-  /// Checks whether the specified character is a vertical line or any crossing.
+  /// Checks whether the character is a vertical line or any crossing.
   pub fn is_vert_line_or_crossing(&self) -> bool {
     self.is_vert_line() || self.is_crossing()
   }
 
+  /// Checks whether the character is a single vertical line.
+  ///
+  /// # Examples
+  ///
+  /// ```
+  /// # use dtee::Char;
+  /// assert_eq!(true, Char::from('│').is_single_vert_line());
+  ///
+  /// assert_eq!(false, Char::from('║').is_single_vert_line());
+  /// ```
   pub fn is_single_vert_line(&self) -> bool {
     matches!(*self.ch.borrow(), LIGHT_VERTICAL)
   }
 
+  /// Checks whether the character is a double vertical line.
+  ///
+  /// # Examples
+  ///
+  /// ```
+  /// # use dtee::Char;
+  /// assert_eq!(true, Char::from('║').is_double_vert_line());
+  ///
+  /// assert_eq!(false, Char::from('│').is_double_vert_line());
+  /// ```
   pub fn is_double_vert_line(&self) -> bool {
     matches!(*self.ch.borrow(), DOUBLE_VERTICAL)
   }
@@ -439,7 +534,7 @@ impl Char {
     self.is_single_vert_line_crossing_left() || self.is_double_vert_line_crossing_left()
   }
 
-  /// Checks whether the specified character is a `left vertical line`,
+  /// Checks whether the character is a `left vertical line`,
   /// i.e. vertical line seen from the left side of the box-drawing character.
   ///
   /// # Examples
@@ -461,7 +556,7 @@ impl Char {
     )
   }
 
-  /// Checks whether the specified character is a `right vertical line`,
+  /// Checks whether the character is a `right vertical line`,
   /// i.e. vertical line seen from the right side of the box-drawing character.
   ///
   /// # Examples
@@ -483,7 +578,7 @@ impl Char {
     )
   }
 
-  /// Checks whether the specified character is a horizontal line (single or double).
+  /// Checks whether the character is a horizontal line (single or double).
   ///
   /// # Examples
   ///
@@ -492,18 +587,19 @@ impl Char {
   /// assert_eq!(true, Char::from('─').is_horz_line());
   /// assert_eq!(true, Char::from('═').is_horz_line());
   ///
+  /// assert_eq!(false, Char::from('│').is_horz_line());
   /// assert_eq!(false, Char::from('║').is_horz_line());
   /// ```
   pub fn is_horz_line(&self) -> bool {
     matches!(*self.ch.borrow(), LIGHT_HORIZONTAL | DOUBLE_HORIZONTAL)
   }
 
-  /// Checks whether the specified character is a horizontal line or any crossing.
+  /// Checks whether the character is a horizontal line or any crossing.
   pub fn is_horz_line_or_crossing(&self) -> bool {
     self.is_horz_line() || self.is_crossing()
   }
 
-  /// Checks whether the specified character is a space character.
+  /// Checks whether the character is a space character.
   ///
   /// # Examples
   ///
