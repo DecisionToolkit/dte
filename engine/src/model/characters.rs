@@ -52,7 +52,7 @@ pub const LIGHT_DOWN_AND_LEFT: char = '\u{2510}';
 /// ```
 pub const LIGHT_UP_AND_RIGHT: char = '\u{2514}';
 
-/// `┘` `U+2514` Box drawings light up and left.
+/// `┘` `U+2518` Box drawings light up and left.
 /// ```
 /// # use dtee::*;
 /// assert_eq!('┘', LIGHT_UP_AND_LEFT);
