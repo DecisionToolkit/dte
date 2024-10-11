@@ -134,7 +134,7 @@ dependencies = [
 
 [[package]]
 name = "dte"
-version = "0.0.5"
+version = "0.0.6-dev"
 dependencies = [
  "clap",
  "crossterm",
@@ -143,7 +143,7 @@ dependencies = [
 
 [[package]]
 name = "dtee"
-version = "0.0.5"
+version = "0.0.6-dev"
 
 [[package]]
 name = "errno"
