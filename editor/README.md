@@ -28,6 +28,65 @@ Decision table editor.
 
 Work in progress.
 
+## Installation
+
+```shell
+$ cargo install dte
+```
+
+## Keystrokes
+
+| Key           | Action                                              |
+|---------------|-----------------------------------------------------|
+| CTRL + Q      | Quit without saving.                                |
+| Arrow right   | Move cursor one character right                     |
+| Arrow left    | Move cursor one character left                      |
+| Arrow up      | Move cursor one row up                              |
+| Arrow down    | Move cursor one row down                            |
+| End           | Move cursor to the end of the current cell          |
+| Home          | Move cursor to the beginning of the current cell    |
+| PgUp          | Move cursor to the top row of the current cell      |
+| PgDown        | Move cursor to the bottom row of the current cell   |
+| CTRL + End    | Move cursor to the end of the current row           |
+| CTRL + Home   | Move cursor to the beginning of the current row     |
+| CTRL + PgUp   | Move cursor to the top row of the current column    |
+| CTRL + PgDown | Move cursor to the bottom row of the current column |
+| Backspace     | Delete character before the cursor                  |
+| Delete        | Delete character under the cursor                   |
+| Any character | Insert character at the cursor position             |
+| Insert        | Toggle cursor from caret to block and back          |
+| ALT + Insert  | Toggle cursor from caret to underscore and back     |
+
+## Example decision table
+
+```text
+
+ ┌─────────────────┐
+ │  Order options  │
+ ├───┬───────────┬─┴─────╥─────────────────────╥─────────────┬───────────┐
+ │ U │           │       ║    Order options    ║             │           │
+ │   │ Customer  │ Order ╟──────────┬──────────╢ Description │ Reference │
+ │   │   type    │ size  ║ Discount │ Priority ║             │           │
+ │   ├───────────┼───────╫──────────┼──────────╫─────────────┼───────────┤
+ │   │"Business",│       ║          │"Normal", ║             │           │
+ │   │"Private"  │       ║          │ "High",  ║             │           │
+ │   │           │       ║          │ "Low"    ║             │           │
+ ╞═══╪═══════════╪═══════╬══════════╪══════════╬═════════════╪═══════════╡
+ │ 1 │"Business" │  <10  ║   0.10   │ "Normal" ║ Small order │   Ref 1   │
+ ├───┼───────────┼───────╫──────────┼──────────╫─────────────┼───────────┤
+ │ 2 │"Business" │ >=10  ║   0.15   │  "High"  ║ Large order │   Ref 2   │
+ ├───┼───────────┼───────╫──────────┼──────────╫─────────────┼───────────┤
+ │ 3 │"Private"  │   -   ║   0.05   │  "Low"   ║ All orders  │   Ref 3   │
+ └───┴───────────┴───────╨──────────┴──────────╨─────────────┴───────────┘
+
+```
+
+Copy and save this decision table to any file, e.g. `e.txt` and run the editor:
+
+```shell
+$ dte e.txt
+``` 
+
 ## License
 
 Licensed under either of

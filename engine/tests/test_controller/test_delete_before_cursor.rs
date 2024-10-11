@@ -28,7 +28,7 @@ fn _0001() {
     │ 3 │"Private"  │   -   ║   0.05   │  "Low"   ║ All orders  │   Ref 3   │
     └───┴───────────┴───────╨──────────┴──────────╨─────────────┴───────────┘
   "#;
-  let mut controller = Controller::new(INPUT_0002, WIDTH, HEIGHT);
+  let mut controller = Controller::new(INPUT_0002).with_viewport(WIDTH, HEIGHT);
   actions(&mut controller, &[DeleteBefore(1)]);
   assert_eq!(expected, text(&controller));
 }
@@ -54,7 +54,7 @@ fn _0002() {
     │ 3 │"Private"  │   -   ║   0.05   │  "Low"   ║ All orders  │   Ref 3   │
     └───┴───────────┴───────╨──────────┴──────────╨─────────────┴───────────┘
   "#;
-  let mut controller = Controller::new(INPUT_0002, WIDTH, HEIGHT);
+  let mut controller = Controller::new(INPUT_0002).with_viewport(WIDTH, HEIGHT);
   actions(&mut controller, &[MoveRight(1), DeleteBefore(1)]);
   assert_eq!(expected, text(&controller));
 }
@@ -78,7 +78,7 @@ fn _0003() {
     │ 3 │"Private"  │   -  ║   0.05   │  "Low"   ║ All orders  │   Ref 3   │
     └───┴───────────┴──────╨──────────┴──────────╨─────────────┴───────────┘
   "#;
-  let mut controller = Controller::new(INPUT_0004, WIDTH, HEIGHT);
+  let mut controller = Controller::new(INPUT_0004).with_viewport(WIDTH, HEIGHT);
   actions(&mut controller, &[MoveRight(20), DeleteBefore(2)]);
   assert_eq!(expected, text(&controller));
 }
@@ -104,7 +104,7 @@ fn _0004() {
     │ 3 │"Private"  │   -   ║   0.05   │  "Low"   ║ All orders  │   Ref 3   │
     └───┴───────────┴───────╨──────────┴──────────╨─────────────┴───────────┘
   "#;
-  let mut controller = Controller::new(INPUT_0002, WIDTH, HEIGHT);
+  let mut controller = Controller::new(INPUT_0002).with_viewport(WIDTH, HEIGHT);
   actions(&mut controller, &[Insert('X', 57), DeleteBefore(1)]);
   assert_eq!(expected, text(&controller));
 }
@@ -130,7 +130,7 @@ fn _0005() {
     │ 3 │"Private"  │   -   ║   0.05   │  "Low"   ║ All orders  │   Ref 3  │
     └───┴───────────┴───────╨──────────┴──────────╨─────────────┴──────────┘
   "#;
-  let mut controller = Controller::new(INPUT_0002, WIDTH, HEIGHT);
+  let mut controller = Controller::new(INPUT_0002).with_viewport(WIDTH, HEIGHT);
   actions(&mut controller, &[Insert('X', 100), RowEnd(1), DeleteBefore(115), Insert('Y', 1)]);
   assert_eq!(expected, text(&controller));
 }

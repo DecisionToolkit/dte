@@ -2,11 +2,8 @@
 //!
 //! [Region] represents a rectangular region for handling editing operations.
 
-use std::cmp::{max, min};
 use std::fmt;
 use std::fmt::Display;
-
-const MOVE_MARGIN: usize = 1;
 
 /// Rectangular region.
 #[derive(Debug, Default, Copy, Clone, Eq, PartialEq)]
@@ -29,7 +26,7 @@ impl Display for Region {
 }
 
 impl Region {
-  /// Creates a new region with specified coordinates.
+  /// Creates a new region with specified coordinates and size.
   ///
   /// # Examples
   ///
@@ -43,10 +40,12 @@ impl Region {
     Self { left, top, width, height }
   }
 
+  /// Returns the left coordinate of the region.
   pub fn left(&self) -> usize {
     self.left
   }
 
+  /// Returns the right coordinate of the region.
   pub fn right(&self) -> usize {
     self.left.saturating_add(self.width.saturating_sub(1))
   }
@@ -75,6 +74,10 @@ impl Region {
     (self.width, self.height)
   }
 
+  pub fn rect(&self) -> (usize, usize, usize, usize) {
+    (self.left, self.top, self.width, self.height)
+  }
+
   pub fn resize(&mut self, width: usize, height: usize) {
     self.width = width;
     self.height = height;
@@ -90,36 +93,36 @@ impl Region {
     Region { left, top, width, height }
   }
 
-  pub fn move_left(&mut self, anchor: usize, minimum: usize) -> bool {
-    let target = max(anchor.saturating_sub(MOVE_MARGIN), minimum);
-    if target < self.left() {
-      self.left = self.left.saturating_sub(self.left().saturating_sub(target));
+  pub fn shift_left_when_needed(&mut self, column: usize, margin: usize) -> bool {
+    let column_needed = column.saturating_sub(margin);
+    if column_needed < self.left() {
+      self.left = self.left.saturating_sub(self.left().saturating_sub(column_needed));
       return true;
     }
     false
   }
-  pub fn move_right(&mut self, anchor: usize, maximum: usize) -> bool {
-    let target = min(anchor.saturating_add(MOVE_MARGIN), maximum);
-    if target > self.right() {
-      self.left = self.left.saturating_add(target.saturating_sub(self.right()));
-      return true;
-    }
-    false
-  }
-
-  pub fn move_up(&mut self, anchor: usize, minimum: usize) -> bool {
-    let target = max(anchor.saturating_sub(MOVE_MARGIN), minimum);
-    if target < self.top() {
-      self.top = self.top.saturating_sub(self.top().saturating_sub(target));
+  pub fn shift_right_when_needed(&mut self, column: usize, margin: usize) -> bool {
+    let column_needed = column.saturating_add(margin);
+    if column_needed > self.right() {
+      self.left = self.left.saturating_add(column_needed.saturating_sub(self.right()));
       return true;
     }
     false
   }
 
-  pub fn move_down(&mut self, anchor: usize, maximum: usize) -> bool {
-    let target = min(anchor.saturating_add(MOVE_MARGIN), maximum);
-    if target > self.bottom() {
-      self.top = self.top.saturating_add(target.saturating_sub(self.bottom()));
+  pub fn shift_up_when_needed(&mut self, row: usize, margin: usize) -> bool {
+    let row_needed = row.saturating_sub(margin);
+    if row_needed < self.top() {
+      self.top = self.top.saturating_sub(self.top().saturating_sub(row_needed));
+      return true;
+    }
+    false
+  }
+
+  pub fn shift_down_when_needed(&mut self, row: usize, margin: usize) -> bool {
+    let row_needed = row.saturating_add(margin);
+    if row_needed > self.bottom() {
+      self.top = self.top.saturating_add(row_needed.saturating_sub(self.bottom()));
       return true;
     }
     false

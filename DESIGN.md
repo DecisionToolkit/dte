@@ -1,6 +1,4 @@
-# Design
-
-## Handling insertions
+# Handling insertions
 
 **Information item name** (A)
 
@@ -25,7 +23,7 @@
 | `P` | `B` | `F` | decision table's body      | join_row_index  | last           |
 | `-` | `-` | `-` | decision table's body      | first           | last           |
 
-## Handling deletions
+# Handling deletions
 
 **Information item name** (A)
 
@@ -49,4 +47,3 @@
 | `P` | `B` | `S` | decision table's body                           |
 | `P` | `B` | `F` | whole decision table                            |
 | `-` | `-` | `-` | decision table's body                           |
-

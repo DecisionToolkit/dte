@@ -21,6 +21,10 @@ pub fn c_blinking_block() -> crossterm::cursor::SetCursorStyle {
   crossterm::cursor::SetCursorStyle::BlinkingBlock
 }
 
+pub fn c_blinking_under_score() -> crossterm::cursor::SetCursorStyle {
+  crossterm::cursor::SetCursorStyle::BlinkingUnderScore
+}
+
 pub fn c_default_user_shape() -> crossterm::cursor::SetCursorStyle {
   crossterm::cursor::SetCursorStyle::DefaultUserShape
 }
