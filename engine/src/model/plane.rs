@@ -1,7 +1,7 @@
 //! # Edited text with cursor
 
-use crate::cursor::{Cursor, CursorShape};
 use crate::model::characters::*;
+use crate::model::cursor::{Cursor, CursorShape};
 use crate::model::Row;
 use crate::{Region, SPACE};
 
@@ -70,21 +70,25 @@ impl Plane {
     &self.rows
   }
 
-  /// Returns content region.
-  pub fn content_region(&mut self) -> Region {
+  /// Returns the region of the content.
+  pub fn region(&mut self) -> &Region {
     if self.size.is_none() {
       let width = self.rows.iter().map(|row| row.len()).max().unwrap_or_default();
       let height = self.rows.len();
       self.size = Some(Region::new(0, 0, width, height));
     }
-    self.size.unwrap()
+    self.size.as_ref().unwrap()
   }
 
-  /// Returns the position of the cursor in edited text coordinates.
+  pub fn cursor(&self) -> &Cursor {
+    &self.cursor
+  }
+
+  /// Returns the position of the cursor in text coordinates.
   ///
   /// Cursor position is a tuple `(column, row)`.
-  pub fn cursor_position(&self) -> (usize, usize) {
-    self.cursor.get()
+  pub fn cursor_pos(&self) -> (usize, usize) {
+    self.cursor.pos()
   }
 
   pub fn cursor_col(&self) -> usize {
@@ -93,13 +97,13 @@ impl Plane {
 
   /// Returns the character pointed by the cursor.
   pub fn cursor_char(&self) -> Option<&Char> {
-    let (col_index, row_index) = self.cursor.get();
+    let (col_index, row_index) = self.cursor.pos();
     self.rows.get(row_index).and_then(|row| row.get(col_index))
   }
 
   /// Returns the character above the cursor.
   pub fn cursor_char_above(&self) -> Option<&Char> {
-    let (col_index, row_index) = self.cursor.get();
+    let (col_index, row_index) = self.cursor.pos();
     if row_index > 0 {
       self.rows.get(row_index - 1).and_then(|row| row.get(col_index))
     } else {
@@ -189,6 +193,41 @@ impl Plane {
     false
   }
 
+  pub fn cursor_move_cell_top(&mut self) -> bool {
+    let (ix_col, mut ix_row) = self.cursor.pos();
+    ix_row = ix_row.saturating_sub(1);
+    let mut moved = false;
+    while let Some(chr) = self.rows.get(ix_row).and_then(|row| row.get(ix_col)) {
+      if !chr.is_horz_line_or_crossing() || chr.is_vert_line_left() {
+        self.cursor.dec_row(1);
+        moved = true;
+      } else {
+        break;
+      }
+      if ix_row == 0 {
+        break;
+      }
+      ix_row = ix_row.saturating_sub(1);
+    }
+    moved
+  }
+
+  pub fn cursor_move_cell_bottom(&mut self) -> bool {
+    let (ix_col, mut ix_row) = self.cursor.pos();
+    ix_row = ix_row.saturating_add(1);
+    let mut moved = false;
+    while let Some(chr) = self.rows.get(ix_row).and_then(|row| row.get(ix_col)) {
+      if !chr.is_horz_line_or_crossing() || chr.is_vert_line_left() {
+        self.cursor.inc_row(1);
+        moved = true;
+      } else {
+        break;
+      }
+      ix_row = ix_row.saturating_add(1);
+    }
+    moved
+  }
+
   /// Places the cursor at the first character of the first cell in the same row.
   pub fn cursor_move_row_start(&mut self) -> bool {
     if let Some(row) = self.row() {
@@ -219,6 +258,38 @@ impl Plane {
       }
     }
     false
+  }
+
+  /// Places the cursor at the character of the first row in the same column.
+  pub fn cursor_move_col_start(&mut self) {
+    let ix_col = self.cursor.col();
+    for (ix_row, row) in self.rows.iter().enumerate().rev() {
+      if let Some(chr) = row.get(ix_col) {
+        if self.cursor.is_caret() {
+          if !chr.is_horz_line_or_crossing() || chr.is_vert_line_left() {
+            self.cursor.set_row(ix_row);
+          }
+        } else if !chr.is_frame() {
+          self.cursor.set_row(ix_row);
+        }
+      }
+    }
+  }
+
+  /// Places the cursor at the character of the last row in the same column.
+  pub fn cursor_move_col_end(&mut self) {
+    let ix_col = self.cursor.col();
+    for (ix_row, row) in self.rows.iter().enumerate() {
+      if let Some(chr) = row.get(ix_col) {
+        if self.cursor.is_caret() {
+          if !chr.is_horz_line_or_crossing() || chr.is_vert_line_left() {
+            self.cursor.set_row(ix_row);
+          }
+        } else if !chr.is_frame() {
+          self.cursor.set_row(ix_row);
+        }
+      }
+    }
   }
 
   /// Places the cursor at the first character of the next cell in the same row.
@@ -294,29 +365,31 @@ impl Plane {
     false
   }
 
-  pub fn cursor_toggle(&mut self) {
-    self.cursor.toggle();
+  pub fn cursor_toggle_caret_block(&mut self) {
+    let shape = self.cursor.toggle_caret_block();
+    if matches!(shape, CursorShape::Block | CursorShape::UnderScore) {
+      if let Some(chr) = self.rows.get(self.cursor.row()).and_then(|row| row.get(self.cursor.col())) {
+        if chr.is_frame() {
+          self.cursor.dec_col(1);
+        }
+      }
+    }
   }
 
-  pub fn cursor_toggle_bar_block(&mut self) {
-    self.cursor.toggle_bar_block();
+  pub fn cursor_toggle_caret_under_score(&mut self) {
+    let shape = self.cursor.toggle_caret_under_score();
+    if matches!(shape, CursorShape::Block | CursorShape::UnderScore) {
+      if let Some(chr) = self.rows.get(self.cursor.row()).and_then(|row| row.get(self.cursor.col())) {
+        if chr.is_frame() {
+          self.cursor.dec_col(1);
+        }
+      }
+    }
   }
 
-  pub fn cursor_is_caret(&self) -> bool {
-    self.cursor.is_caret()
-  }
-
-  pub fn cursor_is_block(&self) -> bool {
-    self.cursor.is_block()
-  }
-
-  pub fn cursor_is_underscore(&self) -> bool {
-    self.cursor.is_underscore()
-  }
-
-  pub fn insert_char(&mut self, ch: char) {
+  pub fn insert_char(&mut self, ch: char) -> bool {
     // get the current cursor position
-    let (col_index, row_index) = self.cursor.get();
+    let (col_index, row_index) = self.cursor.pos();
     // find the index of the first `left vertical line` starting from the current cursor position
     if let Some(vert_line_index) = self.rows.get(row_index).and_then(|row| row.search_vert_line_right(col_index)) {
       // if there is a minimum one space before the vertical line then simply shift
@@ -327,7 +400,9 @@ impl Plane {
           if col_index <= space_index && chr.is_space() {
             row.shift_text_right(col_index, space_index, ch);
             self.cursor.inc_col(1);
-            return; // <-- returning here when shifting text right is enough
+            // Return `true` to signal that a character wad inserted.
+            // Returning from here when shifting text right is enough.
+            return true;
           }
         }
       }
@@ -358,13 +433,40 @@ impl Plane {
       self.update_joining_row(join_row_info);
 
       // invalidate the content region because the width has changed
-      self.invalidate_content_region()
+      self.invalidate_content_region();
+
+      // Return `true` to signal that a character was inserted.
+      return true;
     }
+    // Return `false` to signal that no changes were made.
+    false
   }
 
-  pub fn delete_char_before_cursor(&mut self) {
+  pub fn override_char(&mut self, ch: char) -> bool {
+    // Get the current cursor position.
+    let (col_index, row_index) = self.cursor.pos();
+    // Find the index of the first `left vertical line` starting from the current cursor position.
+    if let Some(vert_line_index) = self.rows.get(row_index).and_then(|row| row.search_vert_line_right(col_index)) {
+      // Cursor must be placed before the vertical line.
+      if col_index < vert_line_index {
+        // Overwrite the character under the cursor.
+        if let Some(chr) = self.rows.get(row_index).and_then(|row| row.get(col_index)) {
+          chr.set_char(ch);
+          // Move cursor one position right if there is no vertical line directly to the right.
+          if col_index.saturating_add(1) < vert_line_index {
+            self.cursor.inc_col(1);
+          }
+          // Return `true` to signal that the character was overridden.
+          return true;
+        }
+      }
+    }
+    false
+  }
+
+  pub fn delete_char_before_cursor(&mut self) -> bool {
     // get the current cursor position
-    let (col_index, row_index) = self.cursor.get();
+    let (col_index, row_index) = self.cursor.pos();
     // get the character before the cursor, otherwise there is nothing to do
     let delete_char_index = col_index.saturating_sub(1);
     if let Some(chr) = self.rows.get(row_index).and_then(|row| row.get(delete_char_index)) {
@@ -376,9 +478,11 @@ impl Plane {
             row.shift_text_left(delete_char_index, vert_line_index.saturating_sub(1));
             self.cursor.dec_col(1);
             // remove whitespaces before the vertical line
-            self.remove_vertical_whitespaces(col_index, row_index);
+            self.remove_vertical_spaces(col_index, row_index);
             // invalidate the content region because the width has changed
-            self.invalidate_content_region()
+            self.invalidate_content_region();
+            // Return `true` to signal that a character was deleted.
+            return true;
           }
         }
       } else {
@@ -386,36 +490,50 @@ impl Plane {
         // move the content from current line to the previous line and shrink the cell height.
         // If the height of the decision table has changes, then the content region
         // is invalidated inside this function (!).
-        self.unsplit_line();
+        return self.unsplit_line();
       }
     }
+    false
   }
 
-  pub fn delete_char_under_cursor(&mut self) {
-    // get the current cursor position
-    let (col_index, row_index) = self.cursor.get();
-    // get the character before the cursor, otherwise there is nothing to do
+  pub fn delete_char_under_cursor(&mut self) -> bool {
+    // Get the current cursor position.
+    let (col_index, row_index) = self.cursor.pos();
+    // Get the character under the cursor, otherwise there is nothing to do.
     if let Some(chr) = self.rows.get(row_index).and_then(|row| row.get(col_index)) {
-      // the character before the cursor must be different from frame character
+      // The character under the cursor must be different from the frame character.
+      // This is important when the cursor shape is caret, because it looks like being on the left side
+      // of the character, but in fact it is positioned on the frame character.
       if !chr.is_frame() {
+        // The current row must be valid.
         if let Some(row) = self.rows.get_mut(row_index) {
-          // get the index of the `left vertical line` on the right side of the cell
+          // Get the index of the `left vertical line` on the right side of the edited cell.
           if let Some(vert_line_index) = row.search_vert_line_right(col_index) {
+            // Shift the text contained in the cell one character to the left, deleting the first one.
             row.shift_text_left(col_index, vert_line_index.saturating_sub(1));
-            // remove whitespaces before the vertical line
-            self.remove_vertical_whitespaces(col_index, row_index);
-            // invalidate the content region because the width has changed
-            self.invalidate_content_region()
+            // Remove single whitespace before each vertical line.
+            self.remove_vertical_spaces(col_index, row_index);
+            // Invalidate the content region because the width has changed.
+            self.invalidate_content_region();
+            // When the cursor is block or underscore, then check if after removing spaces,
+            // the cursor is not positioned on the frame. If this is the case,
+            // then move the cursor one position left.
+            if (self.cursor.is_block() || self.cursor().is_under_score()) && self.cursor_char().map_or(false, |chr| chr.is_frame()) {
+              self.cursor.dec_col(1);
+            }
+            // Return `true` to signal that a character was deleted.
+            return true;
           }
         }
       }
     }
+    false
   }
 
   /// Splits line at cursor position.
-  pub fn split_line(&mut self) {
+  pub fn split_line(&mut self) -> bool {
     // get the current cursor position
-    let (col_index, row_index) = self.cursor.get();
+    let (col_index, row_index) = self.cursor.pos();
     // get the index of the nearest horizontal line moving down in the current column
     if let Some(horz_line_row_index) = self.search_horizontal_line_or_crossing_down(col_index, row_index) {
       // get current row for calculating cell range
@@ -479,15 +597,20 @@ impl Plane {
           }
           // update the cursor position to the below at the beginning of the cell
           self.cursor.set(left_index, row_index + 1);
+          // The height of the decision table has changed, so invalidate the content region.
+          self.invalidate_content_region();
+          // Return `true` to signal that the content has changed.
+          return true;
         }
       }
     }
+    false
   }
 
   /// Unsplits (joins) the current line with the line in a row above.
-  pub fn unsplit_line(&mut self) {
+  pub fn unsplit_line(&mut self) -> bool {
     // Retrieve the current cursor position.
-    let (col_index, row_index) = self.cursor.get();
+    let (col_index, row_index) = self.cursor.pos();
     // Make sure, there is no `frame` character above the current cursor position.
     if let Some(chr_above) = self.cursor_char_above() {
       if !chr_above.is_frame() {
@@ -517,20 +640,23 @@ impl Plane {
                 }
               }
               // Reduce the height by removing whitespace before the horizontal line below.
-              self.remove_horizontal_whitespaces();
+              let changed = self.remove_horizontal_whitespaces();
               // Update the cursor position.
               self.cursor.set(left_index + text_len_above, row_index - 1);
+              // Return the changed flag to signal if the content has changed or not.
+              return changed;
             }
           }
         }
       }
     }
+    false
   }
 
   /// aaa
-  fn remove_horizontal_whitespaces(&mut self) {
+  fn remove_horizontal_whitespaces(&mut self) -> bool {
     // Retrieve the current cursor position.
-    let (col_index, row_index) = self.cursor.get();
+    let (col_index, row_index) = self.cursor.pos();
     // Find the index of the nearest row containing horizontal line or crossing in the column pointed by the cursor.
     if let Some(horz_line_row_index) = self.search_horizontal_line_or_crossing_down(col_index, row_index) {
       // Retrieve the current row.
@@ -570,7 +696,9 @@ impl Plane {
               self.rows.remove(ix_join - 1);
               // The height of the decision table has changed, so invalidate the content region.
               self.invalidate_content_region();
-              return; // WATCH OUT THIS RETURN!
+              // Return `true` to signal that the content has changed.
+              // WATCH OUT THIS EARLY RETURN!
+              return true;
             }
           }
           //-------------------------------------------------------------------------
@@ -591,10 +719,13 @@ impl Plane {
           // Delete the last row of the decision table.
           self.rows.pop();
           // The height of the decision table has changed, so invalidate the content region.
-          self.invalidate_content_region()
+          self.invalidate_content_region();
+          // Return `true` to signal that the content has changed.
+          return true;
         }
       }
     }
+    false
   }
 
   /// Searches for the index of the first row containing a horizontal line.
@@ -611,45 +742,45 @@ impl Plane {
   }
 
   /// This is complicated. Document this ;-)
-  fn remove_vertical_whitespaces(&mut self, col_index: usize, row_index: usize) {
+  fn remove_vertical_spaces(&mut self, col_index: usize, row_index: usize) {
     let join_row_info = self.join_row_info();
     if let Some((join_row_index, is_full)) = join_row_info {
       if row_index < join_row_index {
         if let Some(vert_line_index) = self.rows.get(row_index).and_then(|row| row.search_vert_line_right(col_index)) {
-          let ws_present_above = self.rows[..join_row_index].iter().all(|row| row.is_vert_whitespace(vert_line_index));
-          let ws_present_below = self.rows[join_row_index..].iter().all(|row| row.is_vert_whitespace(vert_line_index));
-          if ws_present_above {
+          let spaces_present_above_join_row = self.rows[..join_row_index].iter().all(|row| row.is_deletable_space(vert_line_index));
+          let spaces_present_below_join_row = self.rows[join_row_index..].iter().all(|row| row.is_deletable_space(vert_line_index));
+          if spaces_present_above_join_row {
             for row in self.rows[..join_row_index].iter_mut() {
-              row.delete_whitespace(vert_line_index);
+              row.delete_space(vert_line_index);
             }
           }
-          if is_full && ws_present_below {
+          if is_full && spaces_present_below_join_row {
             for row in self.rows[join_row_index..].iter_mut() {
-              row.delete_whitespace(vert_line_index);
+              row.delete_space(vert_line_index);
             }
           }
         }
       } else {
-        let ws_present_above = self.rows[..join_row_index].iter().all(|row| row.is_vert_whitespace(col_index));
-        let ws_present_below = self.rows[join_row_index..].iter().all(|row| row.is_vert_whitespace(col_index));
+        let spaces_present_above_join_row = self.rows[..join_row_index].iter().all(|row| row.is_deletable_space(col_index));
+        let space_present_below_join_row = self.rows[join_row_index..].iter().all(|row| row.is_deletable_space(col_index));
         if is_full {
-          if ws_present_above && ws_present_below {
+          if spaces_present_above_join_row && space_present_below_join_row {
             for row in self.rows.iter_mut() {
-              row.delete_whitespace(col_index);
+              row.delete_space(col_index);
             }
           }
-        } else if ws_present_below {
+        } else if space_present_below_join_row {
           for row in self.rows[join_row_index..].iter_mut() {
-            row.delete_whitespace(col_index);
+            row.delete_space(col_index);
           }
         }
       }
       self.update_joining_row(join_row_info);
     } else {
-      let ws_present = self.rows.iter().all(|row| row.is_vert_whitespace(col_index));
-      if ws_present {
+      let spaces_present = self.rows.iter().all(|row| row.is_deletable_space(col_index));
+      if spaces_present {
         for row in self.rows.iter_mut() {
-          row.delete_whitespace(col_index);
+          row.delete_space(col_index);
         }
       }
     }
@@ -709,6 +840,10 @@ impl Plane {
   /// based on the current number of columns and rows.
   fn invalidate_content_region(&mut self) {
     self.size = None;
+  }
+
+  pub fn is_invalidated_content_region(&self) -> bool {
+    self.size.is_none()
   }
 }
 

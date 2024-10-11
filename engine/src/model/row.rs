@@ -143,20 +143,26 @@ impl Row {
     }
   }
 
-  pub fn is_vert_whitespace(&self, mut col_index: usize) -> bool {
+  /// Checks if there is a space before the next vertical line that can be deleted.
+  pub fn is_deletable_space(&self, mut col_index: usize) -> bool {
     while let Some(chr) = self.0.get(col_index) {
+      // Left crossing can be deleted.
       if chr.is_vert_line_crossing_left() {
         return true;
       }
       if chr.is_vert_line_left() {
-        return self.0.get(col_index.saturating_sub(1)).map_or(false, |chr| chr.is_space());
+        // Check if there is a space directly before the vertical line.
+        let is_space_before = self.0.get(col_index.saturating_sub(1)).map_or(false, |chr| chr.is_space());
+        // To preserve a minimum single space in a cell, check if there is no frame before the last space.
+        let no_frame_before_space = self.0.get(col_index.saturating_sub(2)).map_or(false, |chr| !chr.is_frame());
+        return is_space_before && no_frame_before_space;
       }
       col_index += 1;
     }
     false
   }
 
-  pub fn delete_whitespace(&mut self, mut col_index: usize) {
+  pub fn delete_space(&mut self, mut col_index: usize) {
     while let Some(chr) = self.0.get(col_index) {
       if chr.is_vert_line_or_crossing() {
         self.0.remove(col_index.saturating_sub(1));

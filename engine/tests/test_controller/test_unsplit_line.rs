@@ -25,7 +25,7 @@ fn _0001() {
     │ 3 │"Private"  │   -   ║   0.05   │  "Low"   ║ All orders  │   Ref 3   │
     └───┴───────────┴───────╨──────────┴──────────╨─────────────┴───────────┘
   "#;
-  let mut controller = Controller::new(INPUT_0002, WIDTH, HEIGHT);
+  let mut controller = Controller::new(INPUT_0002).with_viewport(WIDTH, HEIGHT);
   actions(&mut controller, &[DeleteBefore(1)]);
   assert_eq!(expected, text(&controller));
 }
@@ -51,7 +51,7 @@ fn _0002() {
     │ 3 │"Private"  │   -   ║   0.05   │  "Low"   ║ All orders  │   Ref 3   │
     └───┴───────────┴───────╨──────────┴──────────╨─────────────┴───────────┘
   "#;
-  let mut controller = Controller::new(INPUT_0002, WIDTH, HEIGHT);
+  let mut controller = Controller::new(INPUT_0002).with_viewport(WIDTH, HEIGHT);
   actions(&mut controller, &[SplitLine(1), DeleteBefore(1)]);
   assert_eq!(expected, text(&controller));
 }
@@ -77,7 +77,7 @@ fn _0003() {
     │ 3 │"Private"  │   -   ║   0.05   │  "Low"   ║ All orders  │   Ref 3   │
     └───┴───────────┴───────╨──────────┴──────────╨─────────────┴───────────┘
   "#;
-  let mut controller = Controller::new(INPUT_0002, WIDTH, HEIGHT);
+  let mut controller = Controller::new(INPUT_0002).with_viewport(WIDTH, HEIGHT);
   actions(&mut controller, &[MoveDown(1), CellNext(3), SplitLine(1), DeleteBefore(1)]);
   assert_eq!(expected, text(&controller));
 }

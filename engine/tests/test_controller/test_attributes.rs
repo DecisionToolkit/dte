@@ -1,15 +1,13 @@
 use super::*;
 use dtee::{Controller, SPACE};
 
-const WIDTH: usize = 600;
-const HEIGHT: usize = 600;
-
 /// This test checks does nothing, it is just for using
-/// the `show` function for code coverage in tests.
+/// the `show` and `show_visible` functions for code coverage in tests.
 /// No impact on production code, only tests.
 #[test]
 fn _0001() {
-  show(&Controller::new(INPUT_0001, WIDTH, HEIGHT));
+  paper(&Controller::new(INPUT_0001));
+  screen(&Controller::new(INPUT_0001));
 }
 
 #[test]
@@ -31,7 +29,7 @@ fn _0002() {
     •••••••••••••••••••••••••••••••••••••••••••••
     •••••••••••••••••••••••••••••••••••••••••••••
   "#;
-  let controller = Controller::new(INPUT_0001, WIDTH, HEIGHT);
+  let controller = Controller::new(INPUT_0001);
   assert_eq!(expected, attr(controller.content()));
 }
 
@@ -54,7 +52,7 @@ fn _0003() {
     •••••••••••••••••••••••••••••••••••••••••••••
     •••••••••••••••••••••••••••••••••••••••••••••
   "#;
-  let mut controller = Controller::new(INPUT_0001, WIDTH, HEIGHT);
+  let mut controller = Controller::new(INPUT_0001);
   actions(&mut controller, &[Insert(SPACE, 38)]);
   assert_eq!(expected, attr(controller.content()));
 }
@@ -80,6 +78,6 @@ fn _0004() {
     •••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
     •••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
   "#;
-  let controller = Controller::new(INPUT_0002, WIDTH, HEIGHT);
+  let controller = Controller::new(INPUT_0002);
   assert_eq!(expected, attr(controller.content()));
 }

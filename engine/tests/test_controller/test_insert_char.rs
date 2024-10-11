@@ -25,8 +25,8 @@ fn _0001() {
     │ 3 │"Private"  │   -   ║   0.05   │  "Low"   ║ All orders  │   Ref 3   │
     └───┴───────────┴───────╨──────────┴──────────╨─────────────┴───────────┘
   "#;
-  let mut controller = Controller::new(INPUT_0002, WIDTH, HEIGHT);
-  assert!(controller.cursor_is_caret());
+  let mut controller = Controller::new(INPUT_0002).with_viewport(WIDTH, HEIGHT);
+  assert!(controller.cursor().is_caret());
   ('A'..='B').for_each(|ch| {
     controller.insert_char(ch);
   });
@@ -54,9 +54,9 @@ fn _0002() {
     │ 3 │"Private"  │   -   ║   0.05   │  "Low"   ║ All orders  │   Ref 3   │
     └───┴───────────┴───────╨──────────┴──────────╨─────────────┴───────────┘
   "#;
-  let mut controller = Controller::new(INPUT_0002, WIDTH, HEIGHT);
-  assert!(controller.cursor_is_caret());
-  controller.cursor_move_down().unwrap();
+  let mut controller = Controller::new(INPUT_0002).with_viewport(WIDTH, HEIGHT);
+  assert!(controller.cursor().is_caret());
+  controller.cursor_move_down();
   controller.insert_char('A');
   assert_eq!(expected, text(&controller));
 }
@@ -82,9 +82,9 @@ fn _0003() {
     │ 3  │"Private"  │   -   ║   0.05   │  "Low"   ║ All orders  │   Ref 3   │
     └────┴───────────┴───────╨──────────┴──────────╨─────────────┴───────────┘
   "#;
-  let mut controller = Controller::new(INPUT_0002, WIDTH, HEIGHT);
-  assert!(controller.cursor_is_caret());
-  controller.cursor_move_down().unwrap();
+  let mut controller = Controller::new(INPUT_0002).with_viewport(WIDTH, HEIGHT);
+  assert!(controller.cursor().is_caret());
+  controller.cursor_move_down();
   (1..=3).for_each(|_| {
     controller.cursor_move_right();
   });
@@ -113,8 +113,8 @@ fn _0004() {
     │ 3 │"Private"  │   -   ║   0.05   │  "Low"   ║ All orders  │   Ref 3       │
     └───┴───────────┴───────╨──────────┴──────────╨─────────────┴───────────────┘
   "#;
-  let mut controller = Controller::new(INPUT_0002, WIDTH, HEIGHT);
-  assert!(controller.cursor_is_caret());
+  let mut controller = Controller::new(INPUT_0002).with_viewport(WIDTH, HEIGHT);
+  assert!(controller.cursor().is_caret());
   (1..=60).for_each(|_| {
     controller.insert_char('X');
   });
@@ -142,12 +142,12 @@ fn _0005() {
     │ 3 │"Private"  │   -   ║   0.05   │  "Low"   ║ All orders   │   Ref 3   │
     └───┴───────────┴───────╨──────────┴──────────╨──────────────┴───────────┘
   "#;
-  let mut controller = Controller::new(INPUT_0002, WIDTH, HEIGHT);
-  assert!(controller.cursor_is_caret());
+  let mut controller = Controller::new(INPUT_0002).with_viewport(WIDTH, HEIGHT);
+  assert!(controller.cursor().is_caret());
   (1..=56).for_each(|_| {
     controller.insert_char('X');
   });
-  controller.cursor_move_down().unwrap();
+  controller.cursor_move_down();
   (1..=4).for_each(|_| {
     controller.insert_char('X');
   });
@@ -175,13 +175,13 @@ fn _0006() {
     │ 3 │"Private"  │   -   ║   0.05    │  "Low"   ║ All orders  │   Ref 3   │
     └───┴───────────┴───────╨───────────┴──────────╨─────────────┴───────────┘
   "#;
-  let mut controller = Controller::new(INPUT_0002, WIDTH, HEIGHT);
-  assert!(controller.cursor_is_caret());
+  let mut controller = Controller::new(INPUT_0002).with_viewport(WIDTH, HEIGHT);
+  assert!(controller.cursor().is_caret());
   (1..=3).for_each(|_| {
-    controller.cursor_move_down().unwrap();
+    controller.cursor_move_down();
   });
   (1..=3).for_each(|_| {
-    controller.cursor_move_cell_next().unwrap();
+    controller.cursor_move_cell_next();
   });
   (1..=2).for_each(|_| {
     controller.insert_char('X');

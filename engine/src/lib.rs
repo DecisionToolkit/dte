@@ -5,11 +5,11 @@
 // #![warn(rustdoc::missing_crate_level_docs)]
 
 mod controller;
-mod cursor;
 mod model;
 mod region;
+mod updates;
 
 pub use controller::*;
-pub use cursor::*;
 pub use model::*;
 pub use region::*;
+pub use updates::*;

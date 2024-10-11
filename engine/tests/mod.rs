@@ -1,7 +1,7 @@
 mod test_controller;
 mod test_files;
 
-use dtee::{Controller, Row};
+use dtee::{Char, Controller, Row};
 use std::fmt::Write;
 
 enum Action {
@@ -13,6 +13,7 @@ enum Action {
   DeleteBefore(usize),
   DeleteUnder(usize),
   Insert(char, usize),
+  InsertStr(String, usize),
   MoveDown(usize),
   MoveLeft(usize),
   MoveRight(usize),
@@ -20,11 +21,18 @@ enum Action {
   RowEnd(usize),
   RowStart(usize),
   SplitLine(usize),
+  ToggleCaretBlock,
+  ToggleCaretUnderScore,
 }
 
-/// A utility function for printing the whole decision table.
-fn show(controller: &Controller) {
+/// A utility function for printing the decision table like on paper.
+fn paper(controller: &Controller) {
   println!("{}", text(controller));
+}
+
+/// A utility function for printing the decision table like on screen.
+fn screen(controller: &Controller) {
+  println!("{}", view(controller));
 }
 
 /// A utility function that converts a two-dimensional array of characters
@@ -37,6 +45,38 @@ fn text(controller: &Controller) -> String {
   }
   let _ = write!(output, "  ");
   output
+}
+
+/// A utility function that converts a visible part
+/// of the decision table into a single string.
+fn view(controller: &Controller) -> String {
+  let mut output = String::new();
+  let mut last_row = None;
+  let f = |_, row_index, chr: &Char| {
+    if let Some(ix_row) = last_row {
+      if row_index > ix_row {
+        let _ = writeln!(output);
+      }
+    }
+    let _ = write!(output, "{chr}");
+    last_row = Some(row_index);
+  };
+  controller.visit_visible_content(f, Some('░'.into()), None, None);
+  // wrap the decision table view in frame simulating the terminal
+  let width = output.lines().map(|line| line.chars().count()).max().unwrap();
+  let mut framed = String::new();
+  let _ = write!(framed, "\n    ╭{}╮", "─".repeat(width));
+  output.lines().for_each(|line| {
+    let char_count = line.chars().count();
+    let _ = write!(
+      framed,
+      "\n    │{}{}│",
+      line,
+      if char_count < width { " ".repeat(width - char_count) } else { "".to_string() }
+    );
+  });
+  let _ = write!(framed, "\n    ╰{}╯\n  ", "─".repeat(width));
+  framed
 }
 
 /// A utility function that converts a two-dimensional array of characters
@@ -70,7 +110,7 @@ fn attr(input: &[Row]) -> String {
 fn actions(controller: &mut Controller, actions: &[Action]) {
   actions.iter().for_each(|action| match action {
     Action::AssertPos(col_index, row_index) => {
-      assert_eq!((*col_index, *row_index), controller.cursor_position());
+      assert_eq!((*col_index, *row_index), controller.cursor().pos());
     }
     Action::MoveUp(n) => {
       (0..*n).for_each(|_| {
@@ -117,6 +157,13 @@ fn actions(controller: &mut Controller, actions: &[Action]) {
         controller.insert_char(*ch);
       });
     }
+    Action::InsertStr(s, n) => {
+      (0..*n).for_each(|_| {
+        for ch in s.chars() {
+          controller.insert_char(ch);
+        }
+      });
+    }
     Action::DeleteBefore(n) => {
       (0..*n).for_each(|_| {
         controller.delete_char_before_cursor();
@@ -141,6 +188,12 @@ fn actions(controller: &mut Controller, actions: &[Action]) {
       (0..*n).for_each(|_| {
         controller.split_line();
       });
+    }
+    Action::ToggleCaretBlock => {
+      controller.cursor_toggle_caret_block();
+    }
+    Action::ToggleCaretUnderScore => {
+      controller.cursor_toggle_caret_under_score();
     }
   })
 }

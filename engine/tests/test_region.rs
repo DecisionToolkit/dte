@@ -3,7 +3,7 @@ use dtee::Region;
 #[test]
 fn default_should_work() {
   let region = Region::default();
-  assert_eq!("(0, 0, 0, 0)", region.to_string());
+  assert_eq!((0, 0, 0, 0), region.rect());
 }
 
 #[test]

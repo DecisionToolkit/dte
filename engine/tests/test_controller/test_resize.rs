@@ -1,4 +1,4 @@
-//! Test resizing the display area.
+//! Test resizing the viewing area.
 
 use super::*;
 use dtee::Controller;
@@ -6,23 +6,19 @@ use dtee::Controller;
 #[test]
 fn shrink_view() {
   // width and height of the display area are greater than the width and height of the loaded content
-  let mut controller = Controller::new(INPUT_0001.to_string(), 600, 600);
-  // now the display area is shrunk
-  let dirty_regions = controller.resize(12, 12);
-  // because the display area is shrunk, there are no dirty regions in the result,
-  // no regions require repainting in the display
-  assert_eq!(0, dirty_regions.len());
+  let mut controller = Controller::new(INPUT_0001.to_string()).with_viewport(600, 600);
+  // now the viewing area is shrunk
+  controller.resize(12, 12);
+  assert_eq!((0, 0, 12, 12), controller.viewport().rect());
 }
 
 #[test]
 fn extend_view() {
   // width and height of the display area are greater than the width and height of the loaded content
-  let mut controller = Controller::new(INPUT_0001.to_string(), 600, 600);
-  // now the display area is extended
-  let dirty_regions = controller.resize(1000, 1000);
+  let mut controller = Controller::new(INPUT_0001.to_string()).with_viewport(600, 600);
+  // now the viewing area is extended
+  controller.resize(1000, 1000);
   // because the display area is extended, there are some regions in the result,
   // these regions require repainting in the display
-  assert_eq!(2, dirty_regions.len());
-  assert_eq!("(600, 0, 400, 1000)", dirty_regions[0].to_string());
-  assert_eq!("(0, 600, 1000, 400)", dirty_regions[1].to_string());
+  assert_eq!((0, 0, 1000, 1000), controller.viewport().rect());
 }

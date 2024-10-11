@@ -26,7 +26,7 @@ fn larger_view() {
   const HEIGHT: usize = 200; // this is a height of the display area
 
   // both width and height are greater than the width and height of the loaded content
-  let mut controller = Controller::new(INPUT_0001, WIDTH, HEIGHT);
+  let mut controller = Controller::new(INPUT_0001).with_viewport(WIDTH, HEIGHT);
   assert_eq!(expected, text(&controller));
 
   // viewport size is set to the display size
@@ -34,7 +34,7 @@ fn larger_view() {
 
   // cursor position should be in the left top corner, but not at the '┌' character
   // that's why it is (1, 1) and not (0, 0)
-  assert_eq!((1, 1), controller.cursor_position());
+  assert_eq!((1, 1), controller.cursor().pos());
 
   // this is the region of the edited text
   assert_eq!("(0, 0, 45, 15)", controller.content_region().to_string());
@@ -63,7 +63,7 @@ fn smaller_view() {
   const HEIGHT: usize = 6; // this is a height of the display area
 
   // both width and height are less than the width and height of the loaded content
-  let mut controller = Controller::new(INPUT_0001, 10, 6);
+  let mut controller = Controller::new(INPUT_0001).with_viewport(10, 6);
   assert_eq!(expected, text(&controller));
 
   // viewport size is set to the display size
@@ -71,7 +71,7 @@ fn smaller_view() {
 
   // cursor position should be in the left top corner, but not at the '┌' character
   // that's why it is (1, 1) and not (0, 0)
-  assert_eq!((1, 1), controller.cursor_position());
+  assert_eq!((1, 1), controller.cursor().pos());
 
   // this is the region of the edited text
   assert_eq!("(0, 0, 45, 15)", controller.content_region().to_string());
@@ -79,8 +79,8 @@ fn smaller_view() {
 
 #[test]
 fn empty_lines_are_skipped() {
-  let mut controller1 = Controller::new(INPUT_0001, 600, 600);
-  let mut controller2 = Controller::new(INPUT_0003, 600, 600);
+  let mut controller1 = Controller::new(INPUT_0001).with_viewport(600, 600);
+  let mut controller2 = Controller::new(INPUT_0003).with_viewport(600, 600);
   assert_eq!(controller1.content(), controller2.content());
   assert_eq!(controller1.content_region(), controller2.content_region());
   assert_eq!(text(&controller1), text(&controller2));
