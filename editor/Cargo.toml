@@ -11,4 +11,4 @@ edition = { workspace = true }
 [dependencies]
 clap = { workspace = true }
 crossterm = { workspace = true }
-dtee = { path = "../engine" }
+dtee = "0.0.5"
