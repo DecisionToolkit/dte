@@ -138,12 +138,18 @@ version = "0.0.6"
 dependencies = [
  "clap",
  "crossterm",
- "dtee",
+ "dtee 0.0.6 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "dtee"
 version = "0.0.6"
+
+[[package]]
+name = "dtee"
+version = "0.0.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6e87bd3e395d6b41e4f2f3c45db5733d5b88c3f0e18a113cd7b9d897da48fabe"
 
 [[package]]
 name = "errno"
