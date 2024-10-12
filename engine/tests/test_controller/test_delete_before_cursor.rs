@@ -134,3 +134,32 @@ fn _0005() {
   actions(&mut controller, &[Insert('X', 100), RowEnd(1), DeleteBefore(115), Insert('Y', 1)]);
   assert_eq!(expected, text(&controller));
 }
+
+/// Deleting a character placed before the vertical line, when there is an empty line above
+/// should move te cell content one line up and generate cursor position change and content change.
+#[test]
+fn _0006() {
+  let expected = r#"
+    ┌─────────────────┐
+    │  Order options  │
+    ├───┬───────────┬─┴─────╥─────────────────────╥─────────────┬───────────┐
+    │ U │ Customer  │       ║    Order options    ║             │           │
+    │   │   type    │ Order ╟──────────┬──────────╢ Description │ Reference │
+    │   │           │ size  ║ Discount │ Priority ║             │           │
+    │   ├───────────┼───────╫──────────┼──────────╫─────────────┼───────────┤
+    │   │"Business",│       ║          │"Normal", ║             │           │
+    │   │"Private"  │       ║          │ "High",  ║             │           │
+    │   │           │       ║          │ "Low"    ║             │           │
+    ╞═══╪═══════════╪═══════╬══════════╪══════════╬═════════════╪═══════════╡
+    │ 1 │"Business" │  <10  ║   0.10   │ "Normal" ║ Small order │   Ref 1   │
+    ├───┼───────────┼───────╫──────────┼──────────╫─────────────┼───────────┤
+    │ 2 │"Business" │ >=10  ║   0.15   │  "High"  ║ Large order │   Ref 2   │
+    ├───┼───────────┼───────╫──────────┼──────────╫─────────────┼───────────┤
+    │ 3 │"Private"  │   -   ║   0.05   │  "Low"   ║ All orders  │   Ref 3   │
+    └───┴───────────┴───────╨──────────┴──────────╨─────────────┴───────────┘
+  "#;
+  let mut controller = Controller::new(INPUT_0002).with_viewport(WIDTH, HEIGHT);
+  actions(&mut controller, &[MoveDown(2), CellNext(1), AssertPos(5, 4)]);
+  assert_eq!((true, false, false, false, true), controller.delete_char_before_cursor().into());
+  assert_eq!(expected, text(&controller));
+}

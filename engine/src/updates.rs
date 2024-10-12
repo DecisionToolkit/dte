@@ -1,15 +1,7 @@
 //! # Updates
 
-pub const NO_UPDATES: Updates = Updates {
-  cursor_pos_changed: false,
-  cursor_shape_changed: false,
-  viewport_pos_changed: false,
-  viewport_size_changed: false,
-  content_changed: false,
-};
-
 /// Updates done on the underlying data model containing the edited decision table.
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Default, Copy, Clone, Eq, PartialEq)]
 pub struct Updates {
   cursor_pos_changed: bool,
   cursor_shape_changed: bool,
@@ -18,9 +10,15 @@ pub struct Updates {
   content_changed: bool,
 }
 
-impl Default for Updates {
-  fn default() -> Self {
-    NO_UPDATES
+impl From<Updates> for (bool, bool, bool, bool, bool) {
+  fn from(value: Updates) -> Self {
+    (
+      value.cursor_pos_changed,
+      value.cursor_shape_changed,
+      value.viewport_pos_changed,
+      value.viewport_size_changed,
+      value.content_changed,
+    )
   }
 }
 
@@ -64,6 +62,10 @@ impl Updates {
 
   pub fn viewport_pos_changed(&self) -> bool {
     self.viewport_pos_changed
+  }
+
+  pub fn viewport_size_changed(&self) -> bool {
+    self.viewport_size_changed
   }
 
   pub fn content_changed(&self) -> bool {
