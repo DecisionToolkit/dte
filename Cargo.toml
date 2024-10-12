@@ -8,7 +8,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.0.6-dev"
+version = "0.0.6"
 authors = ["Dariusz Depta <depta@engos.de>"]
 repository = "https://github.com/DecisionToolkit/dte.git"
 license = "MIT OR Apache-2.0"

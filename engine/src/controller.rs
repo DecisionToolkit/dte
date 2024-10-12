@@ -3,7 +3,7 @@
 use crate::model::{Plane, Row};
 use crate::region::Region;
 use crate::updates::Updates;
-use crate::{Char, Cursor, NO_UPDATES};
+use crate::{Char, Cursor};
 
 /// Handler for edit operations.
 pub struct Controller {
@@ -124,7 +124,7 @@ impl Controller {
     if self.plane.cursor_move_left() {
       self.updates(cursor_before)
     } else {
-      NO_UPDATES
+      Updates::default()
     }
   }
 
@@ -133,7 +133,7 @@ impl Controller {
     if self.plane.cursor_move_right() {
       self.updates(cursor_before)
     } else {
-      NO_UPDATES
+      Updates::default()
     }
   }
 
@@ -142,7 +142,7 @@ impl Controller {
     if self.plane.cursor_move_up() {
       self.updates(cursor_before)
     } else {
-      NO_UPDATES
+      Updates::default()
     }
   }
 
@@ -151,7 +151,7 @@ impl Controller {
     if self.plane.cursor_move_down() {
       self.updates(cursor_before)
     } else {
-      NO_UPDATES
+      Updates::default()
     }
   }
 
@@ -160,7 +160,7 @@ impl Controller {
     if self.plane.cursor_move_cell_start() {
       self.updates(cursor_before)
     } else {
-      NO_UPDATES
+      Updates::default()
     }
   }
 
@@ -169,7 +169,7 @@ impl Controller {
     if self.plane.cursor_move_cell_end() {
       self.updates(cursor_before)
     } else {
-      NO_UPDATES
+      Updates::default()
     }
   }
 
@@ -178,7 +178,7 @@ impl Controller {
     if self.plane.cursor_move_cell_top() {
       self.updates(cursor_before)
     } else {
-      NO_UPDATES
+      Updates::default()
     }
   }
 
@@ -187,7 +187,7 @@ impl Controller {
     if self.plane.cursor_move_cell_bottom() {
       self.updates(cursor_before)
     } else {
-      NO_UPDATES
+      Updates::default()
     }
   }
 
@@ -196,7 +196,7 @@ impl Controller {
     if self.plane.cursor_move_cell_next() {
       self.updates(cursor_before)
     } else {
-      NO_UPDATES
+      Updates::default()
     }
   }
 
@@ -205,7 +205,7 @@ impl Controller {
     if self.plane.cursor_move_cell_prev() {
       self.updates(cursor_before)
     } else {
-      NO_UPDATES
+      Updates::default()
     }
   }
 
@@ -214,7 +214,7 @@ impl Controller {
     if self.plane.cursor_move_row_start() {
       self.updates(cursor_before)
     } else {
-      NO_UPDATES
+      Updates::default()
     }
   }
 
@@ -223,7 +223,7 @@ impl Controller {
     if self.plane.cursor_move_row_end() {
       self.updates(cursor_before)
     } else {
-      NO_UPDATES
+      Updates::default()
     }
   }
 

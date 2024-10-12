@@ -26,7 +26,7 @@
 //! and follow the movements from test cases.
 
 use super::*;
-use dtee::Controller;
+use dtee::{Controller, Updates};
 
 const WIDTH: usize = 800;
 const HEIGHT: usize = 600;
@@ -42,7 +42,7 @@ fn _0001() {
   // initial cursor position is (1, 1)
   assert_eq!((1, 1), controller.cursor().pos());
   // moving the cursor to the left shouldn't generate any change
-  assert_eq!((false, false, false, false), controller.cursor_move_left().get());
+  assert_eq!(Updates::default(), controller.cursor_move_left());
   // cursor position is still (1, 1)
   assert_eq!((1, 1), controller.cursor().pos());
 }

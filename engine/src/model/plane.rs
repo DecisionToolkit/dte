@@ -640,11 +640,11 @@ impl Plane {
                 }
               }
               // Reduce the height by removing whitespace before the horizontal line below.
-              let changed = self.remove_horizontal_whitespaces();
+              self.remove_horizontal_whitespaces();
               // Update the cursor position.
               self.cursor.set(left_index + text_len_above, row_index - 1);
               // Return the changed flag to signal if the content has changed or not.
-              return changed;
+              return true;
             }
           }
         }
@@ -654,7 +654,7 @@ impl Plane {
   }
 
   /// aaa
-  fn remove_horizontal_whitespaces(&mut self) -> bool {
+  fn remove_horizontal_whitespaces(&mut self) {
     // Retrieve the current cursor position.
     let (col_index, row_index) = self.cursor.pos();
     // Find the index of the nearest row containing horizontal line or crossing in the column pointed by the cursor.
@@ -698,7 +698,7 @@ impl Plane {
               self.invalidate_content_region();
               // Return `true` to signal that the content has changed.
               // WATCH OUT THIS EARLY RETURN!
-              return true;
+              return;
             }
           }
           //-------------------------------------------------------------------------
@@ -720,12 +720,9 @@ impl Plane {
           self.rows.pop();
           // The height of the decision table has changed, so invalidate the content region.
           self.invalidate_content_region();
-          // Return `true` to signal that the content has changed.
-          return true;
         }
       }
     }
-    false
   }
 
   /// Searches for the index of the first row containing a horizontal line.
